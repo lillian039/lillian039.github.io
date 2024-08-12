@@ -1,4 +1,4 @@
 User-agent: *
 Disallow:
 
-Sitemap: https://lillian039.github.io/sitemap.xml
+Sitemap: https://lillian039.github.io/blank/sitemap.xml
