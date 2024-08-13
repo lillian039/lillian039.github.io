@@ -30,7 +30,7 @@ social: true # includes social icons at the bottom of the page
 # Link to your social media connections, too. This theme is set up to use [Font Awesome icons](https://fontawesome.com/) and [Academicons](https://jpswalsh.github.io/academicons/), like the ones below. Add your Facebook, Twitter, LinkedIn, Google Scholar, or just disable all of them. 
 ---
 
-Hi, I'm keya Hu (胡珂雅), a 3rd-year CS undergraduate student from [Shanghai Jiao Tong University](https://en.sjtu.edu.cn/), [ACM class](https://acm.sjtu.edu.cn/home). I participated in a project that explores emotion recognition using raw EEG signals through self-supervised methods as a research assistant in [BCMI labortary](https://bcmi.sjtu.edu.cn/), advised by Prof. [Wei-Long Zheng](https://weilongzheng.github.io/).
+Hi, I'm Keya Hu (胡珂雅), a 4th-year CS undergraduate student from [Shanghai Jiao Tong University](https://en.sjtu.edu.cn/), [ACM class](https://acm.sjtu.edu.cn/home). I participated in a project that explores emotion recognition using raw EEG signals through self-supervised methods as a research assistant in [BCMI labortary](https://bcmi.sjtu.edu.cn/), advised by Prof. [Wei-Long Zheng](https://weilongzheng.github.io/).
 
 I'm currently a visiting student in Cornell University, advised by Prof. [Kevin Ellis](https://www.cs.cornell.edu/~ellisk/). I am working on utilzing LLM to augment dataset of non-language based, such as [ARC (Abstraction and Reasoning Corpus)](https://github.com/fchollet/ARC-AGI) problem, to enlarge LLM's excellent ability to non-language based tasks.
 
