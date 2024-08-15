@@ -1,8 +1,9 @@
 ---
 layout: post
-date: 2016-01-15 07:59:00-0400
+date: Sep, 2021-now
+title: Shanghai Jiao Tong University(SJTU)
 inline: true
 related_posts: false
 ---
 
-A simple inline announcement with Markdown emoji! :sparkles: :smile:
+Undergraduate student majors in computer Science and Technology, in ACM class, Shanghai Jiao Tong University(SJTU).
