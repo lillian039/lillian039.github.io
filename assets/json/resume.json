@@ -15,20 +15,38 @@
       "endDate": "now"
     }
   ],
+  "research experience":[
+    {
+      "name": "Visiting Research Intern",
+      "institution": "Recursion and Learning Lab",
+      "location": "Cornell University, Ithaca, NY, USA",
+      "startDate": "2024.1",
+      "endDate": "now",
+      "summary": "Large Language Model for Program Synthesis, Abstraction Reasoning",
+      "highlights": ["Advisor: Kevin Ellis."]
+    },
+    {
+      "name": "Research Assistant",
+      "institution": "Brain-like Computing and Machine Intelligence Lab",
+      "location": "Shanghai Jiao Tong University, Shanghi, China",
+      "startDate": "2023.9",
+      "endDate": "024.7",
+      "summary": "EEG-Signal for Emotion Recognition, Self-Supervised Learning.",
+      "highlights": ["Advisor: Wei-Long Zheng and Bao-Liang Lu."]
+    }
+  ],
   "publications":[
     {
     "name": "Code Repair with LLMs gives an Exploration-Exploitation Tradeof",
     "publisher": "Hao Tang, Keya Hu, Jin Peng Zhou, Sicheng Zhong, Wei-Long Zheng, Xujie Si, Kevin Ellis",
-    "area": "Annual Conference on Neural Information Processing Systems (NeurIPS)",
     "releaseDate": "2024",
-    "summary": "Program Synthesis, Code Repair, Explore-exploit Tradeoff, Large Language Model"
+    "summary": "Annual Conference on Neural Information Processing Systems (NeurIPS)"
   },
   {
     "name": "Contrastive Self-Supervised EEG Representation Learning for Emotion Classification",
     "publisher": "Keya Hu, Ren-Jie Dai, Wen-Tao Chen, Hao-Long Yin, Bao-Liang Lu, and Wei-Long Zheng",
-    "area": "Annual Conference of the IEEE Engineering in Medicine and Biology Society(EMBC)",
     "releaseDate": "2024",
-    "summary": "Self-supervised Learning, Electroencephalography (EEG), Affective Computing"
+    "summary": "Annual Conference of the IEEE Engineering in Medicine and Biology Society(EMBC)"
   }
   ],
   "skills": [
