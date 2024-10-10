@@ -2,7 +2,7 @@
 layout: about
 title: about
 permalink: /
-subtitle: "latest update: Aug, 2024, still in progress"
+subtitle: "latest update: October, 2024"
 
 profile:
   align: right
@@ -34,6 +34,6 @@ Hi, I'm Keya Hu (胡珂雅), a 4th-year CS undergraduate student from [Shanghai 
 
 I'm currently a visiting student in Cornell University, advised by Prof. [Kevin Ellis](https://www.cs.cornell.edu/~ellisk/). I am working on utilzing LLM to augment dataset of non-language based, such as [ARC (Abstraction and Reasoning Corpus)](https://github.com/fchollet/ARC-AGI) problem, to enlarge LLM's excellent ability to non-language based tasks.
 
-My research interests lies in **Artificial Intelligence, Cognitive Science, Program synthesis, and Large language model**.
+My research interests lies in **Artificial Intelligence, Program Synthesis, and Large language Model**.
 
 
