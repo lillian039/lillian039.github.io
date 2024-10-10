@@ -15,10 +15,35 @@
       "endDate": "now"
     }
   ],
+  "publications":[
+    {
+    "name": "Hao Tang, Keya Hu, Jin Peng Zhou, Sicheng Zhong, Wei-Long Zheng, Xujie Si, Kevin Ellis",
+    "publisher": "Annual Conference on Neural Information Processing Systems (NeurIPS)",
+    "releaseDate": "2024",
+    "summary": "Program Synthesis, Code Repair, Explore-exploit Tradeoff, Large Language Model"
+  }
+  ],
   "skills": [
     {
       "name": "C++, Python, C, Java, HTML, LaTeX",
       "level": "Master"
+    }
+  ],
+  "awards": [
+    {
+      "title": "China National Scholarship",
+      "date": "2024",
+      "summary": "Award for 0.2% student, the highest national-level scholarship."
+    },
+    {
+      "title": "Zhiyuan Honors Scholarship",
+      "date": "2024, 2023, 2022, 2021",
+      "summary": "Award for top students majoring in science."
+    },
+    {
+      "title": "Long-Hu Scholarship",
+      "date": "2023",
+      "summary": "Award for top students majoring in computer science."
     }
   ],
   "languages": [
