@@ -17,10 +17,18 @@
   ],
   "publications":[
     {
-    "name": "Hao Tang, Keya Hu, Jin Peng Zhou, Sicheng Zhong, Wei-Long Zheng, Xujie Si, Kevin Ellis",
-    "publisher": "Annual Conference on Neural Information Processing Systems (NeurIPS)",
+    "name": "Code Repair with LLMs gives an Exploration-Exploitation Tradeof",
+    "publisher": "Hao Tang, Keya Hu, Jin Peng Zhou, Sicheng Zhong, Wei-Long Zheng, Xujie Si, Kevin Ellis",
+    "area": "Annual Conference on Neural Information Processing Systems (NeurIPS)",
     "releaseDate": "2024",
     "summary": "Program Synthesis, Code Repair, Explore-exploit Tradeoff, Large Language Model"
+  },
+  {
+    "name": "Contrastive Self-Supervised EEG Representation Learning for Emotion Classification",
+    "publisher": "Keya Hu, Ren-Jie Dai, Wen-Tao Chen, Hao-Long Yin, Bao-Liang Lu, and Wei-Long Zheng",
+    "area": "Annual Conference of the IEEE Engineering in Medicine and Biology Society(EMBC)",
+    "releaseDate": "2024",
+    "summary": "Self-supervised Learning, Electroencephalography (EEG), Affective Computing"
   }
   ],
   "skills": [
