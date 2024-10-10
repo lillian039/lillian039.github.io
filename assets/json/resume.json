@@ -15,7 +15,7 @@
       "endDate": "now"
     }
   ],
-"work": [
+"research experience": [
   {
     "name": "Recursion and Learning Lab, Cornell University",
     "position": "Visiting Research Intern",
@@ -33,6 +33,18 @@
     "highlights": ["Advisor: Wei-Long Zheng and Bao-Liang Lu."]
   }
 ],
+"teaching experience":[
+  {
+    "name": "Data Structures",
+    "position": "Teaching Assistant",
+    "startDate": "2023 Spring"
+  },
+  {
+    "name": "Programming Design",
+    "position": "Teaching Assistant",
+    "startDate": "2022 Fall"
+  }
+],
   "publications":[
     {
     "name": "Code Repair with LLMs gives an Exploration-Exploitation Tradeof",
@@ -46,6 +58,39 @@
     "releaseDate": "2024",
     "summary": "Annual Conference of the IEEE Engineering in Medicine and Biology Society(EMBC)"
   }
+  ],
+  "projects": [
+    {
+      "name": "In-context-Reasoning-with-Errors",
+      "summary": "Investigate how typical In-context-Learning(ICL) factors affect math problem-solving performance and examines the impact of erroneous examples",
+      "highlights": ["ICL", "LLM", "Error tolerance", "Math"],
+      "startDate": "2024-05",
+      "endDate": "2024-07",
+      "url": "https://github.com/lillian039/In-context-Reasoning-with-Errors/blob/main/docs/Math_In_context_learning_with_error.pdf"
+    },
+    {
+      "name": "Compiler",
+      "summary": "Completed the architecture for a Compiler, transforming the input language into ASM output by Java. Implemented mem to reg and graph coloring for further optimization.",
+      "highlights": ["AST", "IR", "ASM", "Java"],
+      "startDate": "2022-09",
+      "endDate": "2023-02",
+      "url": "https://github.com/lillian039/Mx-Compiler-Design-2022"
+    },
+    {
+      "name": "CPU",
+      "summary": "Implemented a CPU with the Tomasulo algorithm using Verilog.",
+      "highlights": ["Tomasulo"],
+      "startDate": "2022-10",
+      "endDate": "2023-01",
+      "url": "https://github.com/lillian039/RISCV-CPU-2022"
+    },
+    {
+      "name": "Ray-Tracer",
+      "summary": "Implemented a ray tracer based on the principles of ray tracing by Rust, capable of placing objects and rendering light effects.",
+      "startDate": "2022-7",
+      "endDate": "2023-08",
+      "url": "https://github.com/lillian039/PPCA-Raytracer-2022"
+    }
   ],
   "skills": [
     {
