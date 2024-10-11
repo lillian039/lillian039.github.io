@@ -6,7 +6,7 @@
   },
   "education": [
     {
-      "institution": "Shanghai Jiao Tong University",
+      "institution": "Shanghai Jiao Tong University(SJTU)",
       "location": "Shanghi, China",
       "url": "https://www.sjtu.edu.cn/",
       "area": "Computer Science and Technology",
@@ -37,12 +37,17 @@
   {
     "name": "Data Structures",
     "position": "Teaching Assistant",
-    "startDate": "2023 Spring"
+    "location": "SJTU",
+    "startDate": "2023",
+    "endDate": "Spring"
+
   },
   {
     "name": "Programming Design",
     "position": "Teaching Assistant",
-    "startDate": "2022 Fall"
+    "location": "SJTU",
+    "startDate": "2022",
+    "endDate": "Fall"
   }
 ],
   "publications":[
