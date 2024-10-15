@@ -83,7 +83,7 @@ jobs:
         run: |
           sudo apt install pipx
           pipx ensurepath
-          pipx install --upgrade jupyter
+          pipx install jupyter
           export JEKYLL_ENV=production
           bundle exec jekyll build
       - name: Purge unused CSS 🧹
