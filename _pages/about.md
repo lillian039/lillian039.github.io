@@ -6,7 +6,7 @@ subtitle: "latest update: October, 2024"
 
 profile:
   align: right
-  image: prof_pic3.jpg
+  image: prof_pic.jpg
   image_circular: false # crops the image to make it circular
   more_info: >
     <p style="font-size: 16px; color: #333; font-family: sans-serif;">
