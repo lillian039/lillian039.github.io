@@ -34,8 +34,7 @@ Hi, I'm Keya Hu (胡珂雅), a 4th-year CS undergraduate student from [Shanghai 
 
 Previously, I participated in a project that explores emotion recognition using raw EEG signals through self-supervised methods as a research assistant in [BCMI labortary](https://bcmi.sjtu.edu.cn/), advised by Prof. [Wei-Long Zheng](https://weilongzheng.github.io/).
 
-
-
 My research interests lies in **Artificial Intelligence, Program Synthesis, and Large language Model**.
 
+I am looking for a PhD position in this application season!
 
