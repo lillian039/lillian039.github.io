@@ -79,7 +79,15 @@
       "highlights": ["Reinforcement Learning"],
       "startDate": "2024-04",
       "endDate": "2024-05",
-      "url": "https://github.com/lillian039/lillian039.github.io/blob/master/assets/pdf/example_pdf.pdf"
+      "url": "https://github.com/lillian039/lillian039.github.io/blob/master/assets/pdf/Explorations_on_the_RMA_Method.pdf"
+    },
+    {
+      "name": "CRLT-DD: Condense and Rebalance Long-Tailed Dataset with Dataset Distillation",
+      "summary": "We use the method called distribution matching for dataset distillation and add self-supervised pre-train before classifying to Mitigate the long tail effect",
+      "highlights": ["CV", "Dataset Distillation", "Long-Tailed Dataset"],
+      "startDate": "2023-10",
+      "endDate": "2023-11",
+      "url": "https://github.com/lillian039/lillian039.github.io/blob/master/assets/pdf/CRLT_DD__Condense_and_Rebalance_Long_Tailed_Dataset_with_Dataset_Distillation.pdf"
     },
     {
       "name": "Compiler",
