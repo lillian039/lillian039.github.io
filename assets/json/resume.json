@@ -74,6 +74,14 @@
       "url": "https://github.com/lillian039/In-context-Reasoning-with-Errors/blob/main/docs/Math_In_context_learning_with_error.pdf"
     },
     {
+      "name": "Explorations on the RMA Method",
+      "summary": "Train a quadruped robot to walk with the Rapid Motor Adaptation(RMA) method",
+      "highlights": ["Reinforcement Learning"],
+      "startDate": "2024-04",
+      "endDate": "2024-05",
+      "url": "https://github.com/lillian039/lillian039.github.io/blob/master/assets/pdf/example_pdf.pdf"
+    },
+    {
       "name": "Compiler",
       "summary": "Completed the architecture for a Compiler, transforming the input language into ASM output by Java. Implemented mem to reg and graph coloring for further optimization.",
       "highlights": ["AST", "IR", "ASM", "Java"],
