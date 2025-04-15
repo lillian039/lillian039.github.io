@@ -2,7 +2,7 @@
 layout: about
 title: about
 permalink: /
-subtitle: "latest update: October, 2024"
+subtitle: "latest update: April, 2025"
 
 profile:
   align: right
@@ -30,11 +30,10 @@ social: true # includes social icons at the bottom of the page
 # Link to your social media connections, too. This theme is set up to use [Font Awesome icons](https://fontawesome.com/) and [Academicons](https://jpswalsh.github.io/academicons/), like the ones below. Add your Facebook, Twitter, LinkedIn, Google Scholar, or just disable all of them. 
 ---
 
-Hi, I'm Keya Hu (胡珂雅), a 4th-year CS undergraduate student from [Shanghai Jiao Tong University](https://en.sjtu.edu.cn/), [ACM class](https://acm.sjtu.edu.cn/home). I'm currently a visiting student in [Cornell University](https://www.cornell.edu/), advised by Prof. [Kevin Ellis](https://www.cs.cornell.edu/~ellisk/). I am working on utilzing LLM to augment dataset of non-language based, such as [ARC (Abstraction and Reasoning Corpus)](https://github.com/fchollet/ARC-AGI) problem, to enlarge LLM's excellent ability to non-language based tasks.
+Hi, I'm Keya(Lillian) Hu (胡珂雅), a 4th-year CS undergraduate student from [Shanghai Jiao Tong University](https://en.sjtu.edu.cn/), [ACM class](https://acm.sjtu.edu.cn/home). I am an also an incoming PhD student at [MIT EECS](https://www.eecs.mit.edu/).
 
-Previously, I participated in a project that explores emotion recognition using raw EEG signals through self-supervised methods as a research assistant in [BCMI labortary](https://bcmi.sjtu.edu.cn/), advised by Prof. [Wei-Long Zheng](https://weilongzheng.github.io/).
+Over summer–winter 2024, I was a visiting student at [Cornell University](https://www.cornell.edu/), where I was fortunate advised by Prof. [Kevin Ellis](https://www.cs.cornell.edu/~ellisk/). I worked on utilzing LLM to tackle few-shot concept learning task, such as [ARC (Abstraction and Reasoning Corpus)](https://github.com/fchollet/ARC-AGI) problem, to enlarge LLM's excellent data-efficient in-context learning ability.
 
-My research interests lies in **Artificial Intelligence, Program Synthesis, and Large language Model**.
+During my third year, I participated in a project that explores emotion recognition using raw EEG signals through self-supervised methods as a research assistant in [BCMI labortary](https://bcmi.sjtu.edu.cn/), advised by Prof. [Wei-Long Zheng](https://weilongzheng.github.io/).
 
-I am looking for a PhD position in this application season!
-
+My research interests lies in **Artificial Intelligence, Program Synthesis, and Large language Model**. I am excited about building more data-efficient and more generalizable AI agent.

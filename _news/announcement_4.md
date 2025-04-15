@@ -6,4 +6,4 @@ inline: true
 related_posts: false
 ---
 
-Our team win the ARC-prize 2024 best paper award! https://arcprize.org/2024-results
+Our team win the [ARC-prize 2024](https://arcprize.org/2024-results) best paper award!
