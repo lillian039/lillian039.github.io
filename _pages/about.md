@@ -30,7 +30,7 @@ social: true # includes social icons at the bottom of the page
 # Link to your social media connections, too. This theme is set up to use [Font Awesome icons](https://fontawesome.com/) and [Academicons](https://jpswalsh.github.io/academicons/), like the ones below. Add your Facebook, Twitter, LinkedIn, Google Scholar, or just disable all of them. 
 ---
 
-Hi, I'm Keya(Lillian) Hu (胡珂雅), a 4th-year CS undergraduate student from [Shanghai Jiao Tong University](https://en.sjtu.edu.cn/), [ACM class](https://acm.sjtu.edu.cn/home). I am an also an incoming PhD student at [MIT EECS](https://www.eecs.mit.edu/).
+Hi, I'm Keya(Lillian) Hu (胡珂雅), a 4th-year CS undergraduate student from [Shanghai Jiao Tong University](https://en.sjtu.edu.cn/), [ACM class](https://acm.sjtu.edu.cn/home). I am an incoming PhD student at [MIT EECS](https://www.eecs.mit.edu/).
 
 Over summer–winter 2024, I was a visiting student at [Cornell University](https://www.cornell.edu/), where I was fortunate advised by Prof. [Kevin Ellis](https://www.cs.cornell.edu/~ellisk/). I worked on utilzing LLM to tackle few-shot concept learning task, such as [ARC (Abstraction and Reasoning Corpus)](https://github.com/fchollet/ARC-AGI) problem, to enlarge LLM's excellent data-efficient in-context learning ability.
 
