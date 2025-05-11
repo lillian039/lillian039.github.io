@@ -34,4 +34,4 @@ Hi, I'm Keya(Lillian) Hu (胡珂雅), a 4th-year CS undergraduate student from [
 
 Over summer–winter 2024, I was a visiting student at [Cornell University](https://www.cornell.edu/), where I was fortunate advised by Prof. [Kevin Ellis](https://www.cs.cornell.edu/~ellisk/). I worked on few-shot concept learning task [ARC (Abstraction and Reasoning Corpus)](https://github.com/fchollet/ARC-AGI) problem, which is a visual-puzzle game.
 
-My research interests lies in **Machine Learning, Program Synthesis**. I am excited about building more data-efficient and more generalizable agent.
+My research interests lies in **Program Synthesis, Machine Learning**. I am excited about building more data-efficient and more generalizable agent.
