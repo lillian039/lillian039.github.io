@@ -32,8 +32,6 @@ social: true # includes social icons at the bottom of the page
 
 Hi, I'm Keya(Lillian) Hu (胡珂雅), a 4th-year CS undergraduate student from [Shanghai Jiao Tong University](https://en.sjtu.edu.cn/), [ACM class](https://acm.sjtu.edu.cn/home). I am an incoming PhD student at [MIT EECS](https://www.eecs.mit.edu/).
 
-Over summer–winter 2024, I was a visiting student at [Cornell University](https://www.cornell.edu/), where I was fortunate advised by Prof. [Kevin Ellis](https://www.cs.cornell.edu/~ellisk/). I worked on utilzing LLM to tackle few-shot concept learning task, such as [ARC (Abstraction and Reasoning Corpus)](https://github.com/fchollet/ARC-AGI) problem, to enhance LLM's data-efficient in-context learning capabilities.
+Over summer–winter 2024, I was a visiting student at [Cornell University](https://www.cornell.edu/), where I was fortunate advised by Prof. [Kevin Ellis](https://www.cs.cornell.edu/~ellisk/). I worked on few-shot concept learning task [ARC (Abstraction and Reasoning Corpus)](https://github.com/fchollet/ARC-AGI) problem, which is a visual-puzzle game.
 
-During my third year, I participated in a project that explores emotion recognition using raw EEG signals through self-supervised methods as a research assistant in [BCMI labortary](https://bcmi.sjtu.edu.cn/), advised by Prof. [Wei-Long Zheng](https://weilongzheng.github.io/).
-
-My research interests lies in **Artificial Intelligence, Program Synthesis, and Large language Model**. I am excited about building more data-efficient and more generalizable AI agent.
+My research interests lies in **Machine Learning, Program Synthesis**. I am excited about building more data-efficient and more generalizable agent.
