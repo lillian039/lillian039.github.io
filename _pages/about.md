@@ -32,6 +32,6 @@ social: true # includes social icons at the bottom of the page
 
 Hi, I'm Keya(Lillian) Hu (胡珂雅), a 4th-year CS undergraduate student from [Shanghai Jiao Tong University](https://en.sjtu.edu.cn/), [ACM class](https://acm.sjtu.edu.cn/home). I am an incoming PhD student at [MIT EECS](https://www.eecs.mit.edu/).
 
-Over summer–winter 2024, I was a visiting student at [Cornell University](https://www.cornell.edu/), where I was fortunate advised by Prof. [Kevin Ellis](https://www.cs.cornell.edu/~ellisk/). I worked on few-shot concept learning task [ARC (Abstraction and Reasoning Corpus)](https://github.com/fchollet/ARC-AGI) problem, which is a visual-puzzle game.
+Over summer–winter 2024, I was a visiting student at [Cornell University](https://www.cornell.edu/), where I was fortunate advised by Prof. [Kevin Ellis](https://www.cs.cornell.edu/~ellisk/). I worked on using program synthesis and transduction method to tackle few-shot concept learning [ARC (Abstraction and Reasoning Corpus)](https://github.com/fchollet/ARC-AGI) problem, which is a visual-puzzle game.
 
 My research interests lies in **Program Synthesis, Machine Learning**. I am excited about building more data-efficient and more generalizable agent.
