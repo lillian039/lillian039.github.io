@@ -11,7 +11,7 @@ profile:
   more_info: >
     <p style="font-size: 16px; color: #333; font-family: sans-serif;">
       <i class="fas fa-envelope" style="color: #333;"></i> 
-      <a href="mailto:hu_keya@sjtu.edu.cn" style="color: var(--global-theme-color); text-decoration: none; font-family: sans-serif;">hu_keya@sjtu.edu.cn</a>
+      <a href="mailto:keya_hu@mit.edu" style="color: var(--global-theme-color); text-decoration: none; font-family: sans-serif;">keya_hu@mit.edu</a>
     </p>
     <br>
     <p style="font-size: 16px; color: #333; font-family: sans-serif;">
@@ -30,8 +30,9 @@ social: true # includes social icons at the bottom of the page
 # Link to your social media connections, too. This theme is set up to use [Font Awesome icons](https://fontawesome.com/) and [Academicons](https://jpswalsh.github.io/academicons/), like the ones below. Add your Facebook, Twitter, LinkedIn, Google Scholar, or just disable all of them. 
 ---
 
-Hi, I'm Keya(Lillian) Hu (胡珂雅), a 4th-year CS undergraduate student from [Shanghai Jiao Tong University](https://en.sjtu.edu.cn/), [ACM class](https://acm.sjtu.edu.cn/home). I am an incoming PhD student at [MIT EECS](https://www.eecs.mit.edu/).
+Hi, I'm Keya(Lillian) Hu (胡珂雅), a 1st-year Ph.D. student at [MIT EECS](https://www.eecs.mit.edu/), co-advised by Prof. [Kaiming He](https://people.csail.mit.edu/kaiming/) and Prof.[Jacob Andreas](https://web.mit.edu/jda/www/).
 
-Over summer–winter 2024, I was a visiting student at [Cornell University](https://www.cornell.edu/), where I was fortunate advised by Prof. [Kevin Ellis](https://www.cs.cornell.edu/~ellisk/). I worked on using program synthesis and transduction method to tackle few-shot concept learning [ARC (Abstraction and Reasoning Corpus)](https://github.com/fchollet/ARC-AGI) problem, which is a visual-puzzle game.
+I received my B.Eng. in Computer Science from [Shanghai Jiao Tong University](https://en.sjtu.edu.cn/), [ACM class](https://acm.sjtu.edu.cn/home). From summer to winter 2024, I was a visiting student at [Cornell University](https://www.cornell.edu/), where I was fortunate advised by Prof. [Kevin Ellis](https://www.cs.cornell.edu/~ellisk/) on the [ARC (Abstraction and Reasoning Corpus)](https://github.com/fchollet/ARC-AGI) problem. During my junior year, I had the honor of conducting undergraduate research under the guidance of Prof. [Wei-Long Zheng](https://weilongzheng.github.io/) in the [BCMI labortary, SJTU](https://bcmi.sjtu.edu.cn/). 
 
-My research interests lies in **Program Synthesis, Machine Learning**. I am excited about building more data-efficient and more generalizable agent.
+<!-- My research interests lies in **Large language model, Computer Vision, World model, and Program Synthesis**. I am excited about building more data-efficient and more generalizable agent. -->
+My research interests lies at the intersection of language and vision. I am excited about building more data-efficient and more generalizable agent.
