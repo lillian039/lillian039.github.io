@@ -30,7 +30,7 @@ social: true # includes social icons at the bottom of the page
 # Link to your social media connections, too. This theme is set up to use [Font Awesome icons](https://fontawesome.com/) and [Academicons](https://jpswalsh.github.io/academicons/), like the ones below. Add your Facebook, Twitter, LinkedIn, Google Scholar, or just disable all of them. 
 ---
 
-Hi, I'm Keya(Lillian) Hu (胡珂雅), a 1st-year Ph.D. student at [MIT EECS](https://www.eecs.mit.edu/), co-advised by Prof. [Kaiming He](https://people.csail.mit.edu/kaiming/) and Prof. [Jacob Andreas](https://web.mit.edu/jda/www/).
+Hi, I'm Keya Hu (胡珂雅), a 1st-year Ph.D. student at [MIT EECS](https://www.eecs.mit.edu/), co-advised by Prof. [Kaiming He](https://people.csail.mit.edu/kaiming/) and Prof. [Jacob Andreas](https://web.mit.edu/jda/www/).
 
 I received my B.Eng. in Computer Science from [Shanghai Jiao Tong University](https://en.sjtu.edu.cn/), [ACM class](https://acm.sjtu.edu.cn/home). From summer to winter 2024, I was a visiting student at [Cornell University](https://www.cornell.edu/), where I was fortunate to be advised by Prof. [Kevin Ellis](https://www.cs.cornell.edu/~ellisk/) on the [ARC (Abstraction and Reasoning Corpus)](https://github.com/fchollet/ARC-AGI) problem. During my junior year, I had the honor of conducting undergraduate research under the guidance of Prof. [Wei-Long Zheng](https://weilongzheng.github.io/) in the [BCMI labortary, SJTU](https://bcmi.sjtu.edu.cn/). 
 
