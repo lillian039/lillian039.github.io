@@ -182,7 +182,20 @@
         </section>
 
         <!-- ============================================== -->
-        <!--   SLIDE 3 — Continuous diffusion in action      -->
+        <!--   SLIDE 3 — 2D → 3D transition animation        -->
+        <!-- ============================================== -->
+        <section data-fig="fig2-trans">
+            <h2>From 2D collage to 3D tube
+                <span class="smaller" style="color:#888;font-weight:400;">(zoom out)</span></h2>
+            <p class="small" style="margin: 0 0 0.4em 0;">
+                The single 2D row in slide&nbsp;1 is just one slice.
+                Tilt it back, then add the 2 sequence positions stacked in depth — same flow, three vocabularies in parallel.
+            </p>
+            <svg id="fig2-trans-svg" preserveAspectRatio="xMidYMid meet" class="frame-svg"></svg>
+        </section>
+
+        <!-- ============================================== -->
+        <!--   SLIDE 4 — Continuous diffusion in action      -->
         <!-- ============================================== -->
         <section data-fig="gen-demo">
             <h2>Continuous diffusion in action
@@ -1404,6 +1417,234 @@ function renderFig2_3D() {
 }
 
 /* =========================================================================
+   SLIDE — 2D → 3D transition animation
+   Lightweight renderer that re-uses the SAME data layout as renderFig2_3D
+   (panels, simplex per layer, particle paths) but with cabinet skew, depth
+   offsets, and back-layer opacity all multiplied by a `progress` factor.
+   At progress=0 it collapses to a single flat row (looks like the 2D
+   slide 1 visual); at progress=1 it matches the slide 2 3D view.
+   Re-rendered ~30 fps from a requestAnimationFrame loop.
+   No density grid / no dot animation / no attention arcs — kept light so
+   per-frame cost stays cheap. Fade-in/out applies to particles+lines too. */
+function renderFig2Transition(progress) {
+    const svg = document.getElementById('fig2-trans-svg');
+    if (!svg) return;
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    const VW = 1240, VH = 410;
+    svg.setAttribute('viewBox', `0 0 ${VW} ${VH}`);
+
+    const TIMES = [0.00, 0.25, 0.50, 0.99, 1.00];
+    const SEQ_LEN = 3;
+    const PER_CLUSTER = 6;
+    const N_PER_SEQ = PER_CLUSTER * 3;
+    const PW = 64, PH = 120;
+
+    /* Full-3D constants are scaled by `progress` so progress=0 → flat row. */
+    const SKEW_Y_FULL = -50;
+    const DDX_FULL = Math.round(0.75 * PW);    /* 48 */
+    const DDY_FULL = -Math.round(0.46 * PH);   /* -55 */
+    const SKEW_Y = SKEW_Y_FULL * progress;
+    const DDX = DDX_FULL * progress;
+    const DDY = DDY_FULL * progress;
+    const PANEL_GAP = 2 * DDX_FULL + 50;       /* 146 — keep constant */
+
+    const R = 18;
+    const SIMPLEX_BY_LAYER = [
+        [
+            { ex:           0, ey: -R,        lex:                0, ley: -R - 14 },
+            { ex: -R * 0.866, ey: +R * 0.5,   lex: -R * 0.866 - 18, ley: +R * 0.5 + 14 },
+            { ex: +R * 0.866, ey: +R * 0.5,   lex: +R * 0.866 + 18, ley: +R * 0.5 + 14 }
+        ],
+        [
+            { ex:  R * 0.5,    ey: -R,        lex:  R * 0.5 + 6,    ley: -R - 16 },
+            { ex: -R * 0.5,    ey: -R,        lex: -R * 0.5 - 12,   ley: -R - 16 },
+            { ex:           0, ey: +R,        lex:                -4, ley: +R + 18 }
+        ],
+        [
+            { ex: -R * 0.866, ey: -R * 0.5,   lex: -R * 0.866 - 18, ley: -R * 0.5 - 6 },
+            { ex: +R * 0.866, ey: -R * 0.5,   lex: +R * 0.866 + 18, ley: -R * 0.5 - 6 },
+            { ex:           0, ey: +R,        lex:                0, ley: +R + 14 }
+        ]
+    ];
+    const VOCAB_LABELS = [
+        ['cat',  'dog',   'bird'],
+        ['is',   'are',   'was' ],
+        ['sad',  'happy', 'kind']
+    ];
+    const VOCAB_BY_LAYER = SIMPLEX_BY_LAYER.map((simplex, q) =>
+        simplex.map((v, i) => Object.assign({}, v, { name: VOCAB_LABELS[q][i] }))
+    );
+
+    /* Layout sized for FULL 3D so panels stay still while depth fades in. */
+    const totalW = TIMES.length * PW + (TIMES.length - 1) * PANEL_GAP
+                 + (SEQ_LEN - 1) * DDX_FULL;
+    const totalH = PH + (SEQ_LEN - 1) * Math.abs(DDY_FULL) + Math.abs(SKEW_Y_FULL);
+    const startX = (VW - totalW) / 2;
+    const startY = (VH - totalH) / 2 + Math.abs(SKEW_Y_FULL)
+                 + (SEQ_LEN - 1) * Math.abs(DDY_FULL);
+
+    /* Particle layout — same RNG seed as renderFig2_3D so it looks like
+       the same flow, just with progress-modulated geometry. */
+    let s = 7777;
+    const rnd = () => { s = (s * 9301 + 49297) % 233280; return s / 233280; };
+    const gauss = () => Math.sqrt(-2 * Math.log(1 - rnd())) * Math.cos(2 * Math.PI * rnd());
+    const partsBySeq = [];
+    for (let q = 0; q < SEQ_LEN; q++) {
+        s = 7777 + q * 911;
+        const vocab = VOCAB_BY_LAYER[q];
+        const vocabSorted = vocab.slice().sort((a, b) => a.ey - b.ey);
+        const parts = [];
+        for (let i = 0; i < N_PER_SEQ; i++) {
+            parts.push({ ex: gauss() * 12, ey: gauss() * 22 });
+        }
+        parts.sort((a, b) => a.ey - b.ey);
+        parts.forEach((p, i) => {
+            const cluster = Math.floor(i / PER_CLUSTER);
+            const target = vocabSorted[cluster];
+            p.cluster = cluster;
+            const tjx = (rnd() - 0.5) * 9;
+            const tjy = (rnd() - 0.5) * 7;
+            p.posByT = TIMES.map(t => ({
+                ex: (1 - t) * p.ex + t * (target.ex + tjx),
+                ey: (1 - t) * p.ey + t * (target.ey + tjy)
+            }));
+        });
+        partsBySeq.push(parts);
+    }
+
+    function projPanel(panelX, panelY, ex, ey) {
+        const ix = PW / 2 + ex;
+        const iy = PH / 2 + ey;
+        return {
+            x: panelX + ix,
+            y: panelY + iy + (ix / PW) * SKEW_Y
+        };
+    }
+    function panelPath(px, py) {
+        return `M ${px} ${py + PH} `
+             + `L ${px + PW} ${py + PH + SKEW_Y} `
+             + `L ${px + PW} ${py + SKEW_Y} `
+             + `L ${px} ${py} Z`;
+    }
+
+    /* Render layers BACK to FRONT. Back-layer opacity = full * progress, so
+       at progress=0 only the front layer is visible (looks like 2D). */
+    for (let q = SEQ_LEN - 1; q >= 0; q--) {
+        const offX = q * DDX;
+        const offY = q * DDY;
+        const fullOp = q === 0 ? 0.92 : 0.6 + 0.12 * (SEQ_LEN - 1 - q);
+        const opacity = q === 0 ? fullOp : fullOp * progress;
+        const vocab = VOCAB_BY_LAYER[q];
+        const parts = partsBySeq[q];
+        const isFront = (q === 0);
+
+        if (opacity < 0.02) continue;     /* fully transparent — skip */
+
+        const layerG = el('g', {
+            transform: `translate(${offX}, ${offY})`,
+            opacity: opacity
+        }, svg);
+
+        TIMES.forEach((t, j) => {
+            const px = startX + j * (PW + PANEL_GAP);
+            const py = startY;
+
+            el('path', {
+                d: panelPath(px, py),
+                fill: '#ffffff',
+                stroke: isFront ? '#888' : '#c4cad3',
+                'stroke-width': isFront ? 1 : 0.7
+            }, layerG);
+
+            if (t === 1.00) {
+                const corners = vocab.map(v => projPanel(px, py, v.ex, v.ey));
+                el('polygon', {
+                    points: corners.map(c => `${c.x},${c.y}`).join(' '),
+                    fill: '#fdeed8', stroke: '#e07a30',
+                    'stroke-width': isFront ? 1.4 : 1.0,
+                    opacity: isFront ? 0.55 : 0.4
+                }, layerG);
+                vocab.forEach(v => {
+                    const c = projPanel(px, py, v.ex, v.ey);
+                    el('circle', {
+                        cx: c.x, cy: c.y, r: 4,
+                        fill: '#e07a30', stroke: '#fff', 'stroke-width': 1.2
+                    }, layerG);
+                    const lab = projPanel(px, py, v.lex, v.ley);
+                    tx(layerG, lab.x, lab.y, v.name,
+                        { size: 12, fill: '#444', style: 'italic',
+                          weight: isFront ? 600 : 400 });
+                });
+            } else {
+                parts.forEach(p => {
+                    const pp = p.posByT[j];
+                    const c = projPanel(px, py, pp.ex, pp.ey);
+                    el('circle', {
+                        cx: c.x, cy: c.y, r: 2.3,
+                        fill: '#e07a30', opacity: isFront ? 0.85 : 0.7
+                    }, layerG);
+                });
+            }
+        });
+
+        /* Trajectory lines */
+        const trajOpacity = isFront ? 0.45 : (q === 1 ? 0.32 : 0.22);
+        for (let j = 0; j < TIMES.length - 2; j++) {
+            const px1 = startX + j * (PW + PANEL_GAP);
+            const px2 = startX + (j + 1) * (PW + PANEL_GAP);
+            parts.forEach(p => {
+                const a = projPanel(px1, startY, p.posByT[j].ex,   p.posByT[j].ey);
+                const b = projPanel(px2, startY, p.posByT[j+1].ex, p.posByT[j+1].ey);
+                el('line', {
+                    x1: a.x, y1: a.y, x2: b.x, y2: b.y,
+                    stroke: '#6a5acd', 'stroke-width': 0.55, opacity: trajOpacity
+                }, layerG);
+            });
+        }
+    }
+}
+
+/* Animation driver: ease-in-out cycle 0 → 1 → hold → 1 → 0 → hold → repeat. */
+let _transAnim = null;
+let _transStart = 0;
+function startFig2TransitionLoop() {
+    stopFig2TransitionLoop();
+    _transStart = performance.now();
+    let lastDraw = 0;
+    const easeInOut = u => u < 0.5
+        ? 2 * u * u
+        : 1 - Math.pow(-2 * u + 2, 2) / 2;
+    const FORWARD = 3000;        /* ms 0→1 */
+    const HOLD_TOP = 1800;       /* ms hold at 1 */
+    const REVERSE = 2400;        /* ms 1→0 */
+    const HOLD_BOT = 800;        /* ms hold at 0 */
+    const TOTAL = FORWARD + HOLD_TOP + REVERSE + HOLD_BOT;
+    function tick(now) {
+        if (now - lastDraw > 33) {        /* throttle ~30 fps */
+            lastDraw = now;
+            const t = (now - _transStart) % TOTAL;
+            let p;
+            if (t < FORWARD)                       p = easeInOut(t / FORWARD);
+            else if (t < FORWARD + HOLD_TOP)       p = 1;
+            else if (t < FORWARD + HOLD_TOP + REVERSE)
+                                                  p = easeInOut(1 - (t - FORWARD - HOLD_TOP) / REVERSE);
+            else                                   p = 0;
+            renderFig2Transition(p);
+        }
+        _transAnim = requestAnimationFrame(tick);
+    }
+    /* Render once immediately at progress 0, then start the loop. */
+    renderFig2Transition(0);
+    _transAnim = requestAnimationFrame(tick);
+}
+function stopFig2TransitionLoop() {
+    if (_transAnim) {
+        cancelAnimationFrame(_transAnim);
+        _transAnim = null;
+    }
+}
+
+/* =========================================================================
    SLIDE 3 — Setup the running example
    ========================================================================= */
 function renderExSetup() {
@@ -2446,6 +2687,8 @@ if (window.Reveal) {
         const fig = e.currentSlide && e.currentSlide.dataset && e.currentSlide.dataset.fig;
         if (fig === 'gen-demo') startGenLoop();
         else stopGenLoop();
+        if (fig === 'fig2-trans') startFig2TransitionLoop();
+        else stopFig2TransitionLoop();
     });
 }
 
@@ -2459,6 +2702,7 @@ function renderAll() {
     _rendered = true;
     const fns = [
         renderFig2, renderFig2_3D,
+        function transSeed() { renderFig2Transition(0); },
         renderTrain1, renderTrain2, renderTrain3, renderTrain4,
         renderSamp2, renderSamp3,
         function genDemoSeed() { buildGenDemo(); applyGenStep(0); }
