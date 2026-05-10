@@ -162,7 +162,48 @@
         </section>
 
         <!-- ============================================== -->
-        <!--   SLIDE 2 — Section title for the running example -->
+        <!--   SLIDE 2 — 3D-tube view of the same flow        -->
+        <!-- ============================================== -->
+        <section data-fig="fig2-3d">
+            <h2>3D view of the flow
+                <span class="smaller" style="color:#888;font-weight:400;">(animated)</span></h2>
+            <p class="small" style="margin: 0 0 0.4em 0;">
+                The 2D figure overloads the X-axis with both
+                <em>embedding&nbsp;X</em> <strong>and</strong> time.
+                In reality the structure is a <strong>3D tube</strong>:
+                each slice is a 2D embedding plane (y, z), and the horizontal direction
+                <em>across</em> slices is the time axis t.
+            </p>
+            <svg id="fig2-3d-svg" preserveAspectRatio="xMidYMid meet" class="frame-svg"></svg>
+            <p class="smaller" style="text-align:center; margin-top:0.4em;">
+                Panels are tilted (oblique) to suggest 2D slices viewed at an angle;
+                the only horizontal motion is along&nbsp;t.
+            </p>
+        </section>
+
+        <!-- ============================================== -->
+        <!--   SLIDE 3 — Continuous diffusion in action      -->
+        <!-- ============================================== -->
+        <section data-fig="gen-demo">
+            <h2>Continuous diffusion in action
+                <span class="smaller" style="color:#888;font-weight:400;">(real ELF samples)</span></h2>
+            <p class="small" style="margin: 0 0 0.4em 0;">
+                Three unconditional samples, decoded at each of <strong>101 intermediate sampling steps</strong>
+                (from <em>t=0</em> noise to <em>t=1</em> tokens, every 1% of the schedule).
+                Text fades from <span style="color:#b9c1cc">light&nbsp;noise</span>
+                to <span style="color:#222">dark&nbsp;final</span> as <em>t</em> grows.
+            </p>
+            <div id="gen-demo">
+                <!-- Three example rows injected by JS -->
+            </div>
+            <p class="smaller" style="margin-top: 0.5em; text-align: center;">
+                Decoder applied at <em>every</em> intermediate step here, only for visualization;
+                during real sampling decoding happens once at <em>t=1</em>.
+            </p>
+        </section>
+
+        <!-- ============================================== -->
+        <!--   SLIDE 4 — Section title for the running example -->
         <!-- ============================================== -->
         <section>
             <div style="display:flex; flex-direction:column; align-items:center;
@@ -257,58 +298,6 @@
             </p>
         </section>
 
-        <!-- ============================================== -->
-        <!--   SLIDE 10 — Detail: self-condition (Fig 9)     -->
-        <!-- ============================================== -->
-        <section>
-            <h2>Detail &middot; self-condition <span class="smaller" style="color:#888;font-weight:400;">(Fig.&nbsp;9)</span></h2>
-            <svg id="det-sc-svg" preserveAspectRatio="xMidYMid meet" class="frame-svg"></svg>
-            <p class="small" style="margin-top:0.4em;">
-                Concatenate <strong>z<sub>t</sub></strong> along the channel dim with either
-                <strong>0</strong> (with 50% probability during training) or the previous-step prediction
-                <strong>x̂'</strong>; project back to the original dimension to form
-                <strong>ẑ<sub>t</sub></strong>. <strong>x̂'</strong> later acts as the conditioning signal for CFG.
-            </p>
-        </section>
-
-        <!-- ============================================== -->
-        <!--   SLIDE 11 — Detail: control tokens (Fig 9)     -->
-        <!-- ============================================== -->
-        <section>
-            <h2>Detail &middot; in-context control tokens
-                <span class="smaller" style="color:#888;font-weight:400;">(Fig.&nbsp;9)</span></h2>
-            <svg id="det-ctrl-svg" preserveAspectRatio="xMidYMid meet" class="frame-svg"></svg>
-            <p class="small" style="margin-top:0.4em;">
-                Heterogeneous conditions are <em>prepended</em> as control tokens
-                (instead of adaLN-Zero summation):
-                4 × <span style="color:#b88c1a">time</span>,
-                4 × <span style="color:#b03e3e">CFG scale</span>,
-                4 × <span style="color:#b97326">model mode</span>.
-                The network attends to them via standard self-attention.
-            </p>
-        </section>
-
-        <!-- ============================================== -->
-        <!--   SLIDE 12 — Generation in action (3 examples) -->
-        <!-- ============================================== -->
-        <section data-fig="gen-demo">
-            <h2>Continuous diffusion in action
-                <span class="smaller" style="color:#888;font-weight:400;">(real ELF samples)</span></h2>
-            <p class="small" style="margin: 0 0 0.4em 0;">
-                Three unconditional samples, decoded at each of <strong>101 intermediate sampling steps</strong>
-                (from <em>t=0</em> noise to <em>t=1</em> tokens, every 1% of the schedule).
-                Text fades from <span style="color:#b9c1cc">light&nbsp;noise</span>
-                to <span style="color:#222">dark&nbsp;final</span> as <em>t</em> grows.
-            </p>
-            <div id="gen-demo">
-                <!-- Three example rows injected by JS -->
-            </div>
-            <p class="smaller" style="margin-top: 0.5em; text-align: center;">
-                Decoder applied at <em>every</em> intermediate step here, only for visualization;
-                during real sampling decoding happens once at <em>t=1</em>.
-            </p>
-        </section>
-
     </div>
 </div>
 
@@ -369,18 +358,19 @@ function tx(parent, x, y, s, opts) {
     t.textContent = s;
     return t;
 }
-function arrowHead(svg, id, color) {
+function arrowHead(svg, id, color, opts) {
     const defs = svg.querySelector('defs') || el('defs', null, svg);
     if (!svg.querySelector('defs')) svg.insertBefore(defs, svg.firstChild);
     if (defs.querySelector('#' + id)) return;
     /* `markerUnits="userSpaceOnUse"` so the head size is independent of the
        line's stroke-width — it stays a clearly visible ~12px tip on the
        large slide-5/6/8 figures even at thin (1.4 px) strokes. */
+    const size = (opts && opts.size) || 12;
     const m = el('marker', {
         id: id, viewBox: '0 0 10 10',
         refX: 9, refY: 5,
         markerUnits: 'userSpaceOnUse',
-        markerWidth: 12, markerHeight: 12, orient: 'auto'
+        markerWidth: size, markerHeight: size, orient: 'auto'
     }, defs);
     el('path', { d: 'M0,0 L10,5 L0,10 z', fill: color || '#444' }, m);
 }
@@ -650,6 +640,148 @@ function drawTokensColumn(parent, x, y, opts) {
 }
 
 /* =========================================================================
+   Density rendering helpers (shared by slide-1 and slide-2 figures).
+   Matches elf_teaser.py: per-panel density is the SUM of N isotropic
+   Gaussians (one per cluster centre), normalised by N. Rendered as:
+     - a warm-cmap rasterised "fill" (peach → orange) via canvas → <image>
+     - marching-squares iso-contour lines on top
+   ========================================================================= */
+const WARM_STOPS = [
+    [0.00, [255, 255, 255], 0.00],
+    [0.10, [255, 243, 224], 0.12],
+    [0.30, [255, 224, 178], 0.26],
+    [0.55, [255, 204, 128], 0.38],
+    [0.80, [255, 183,  77], 0.46],
+    [1.00, [232, 153,  64], 0.52],
+];
+function warmCmap(dn) {
+    if (dn <= 0) return [255, 255, 255, 0];
+    if (dn >= 1) {
+        const s = WARM_STOPS[WARM_STOPS.length - 1];
+        return [s[1][0], s[1][1], s[1][2], s[2]];
+    }
+    for (let i = 0; i < WARM_STOPS.length - 1; i++) {
+        if (dn >= WARM_STOPS[i][0] && dn <= WARM_STOPS[i + 1][0]) {
+            const a = WARM_STOPS[i], b = WARM_STOPS[i + 1];
+            const t = (dn - a[0]) / (b[0] - a[0]);
+            return [
+                a[1][0] + (b[1][0] - a[1][0]) * t,
+                a[1][1] + (b[1][1] - a[1][1]) * t,
+                a[1][2] + (b[1][2] - a[1][2]) * t,
+                a[2]    + (b[2]    - a[2]   ) * t,
+            ];
+        }
+    }
+    return [255, 255, 255, 0];
+}
+function gaussMixGrid(centers, sigma, w, h, n) {
+    const grid = new Array(n);
+    let maxD = 0;
+    const inv2s2 = 1 / (2 * sigma * sigma);
+    for (let py = 0; py < n; py++) {
+        const row = new Array(n);
+        const fy = (py / (n - 1)) * h;
+        for (let px = 0; px < n; px++) {
+            const fx = (px / (n - 1)) * w;
+            let d = 0;
+            for (let k = 0; k < centers.length; k++) {
+                const ddx = fx - centers[k][0];
+                const ddy = fy - centers[k][1];
+                d += Math.exp(-(ddx * ddx + ddy * ddy) * inv2s2);
+            }
+            d /= centers.length;
+            row[px] = d;
+            if (d > maxD) maxD = d;
+        }
+        grid[py] = row;
+    }
+    return { grid: grid, maxD: maxD };
+}
+function renderDensityFill(parent, x, y, w, h, grid, maxD) {
+    const n = grid.length;
+    if (maxD < 1e-9) return;
+    const can = document.createElement('canvas');
+    can.width = n;
+    can.height = n;
+    const ctx = can.getContext('2d');
+    const imgd = ctx.createImageData(n, n);
+    const dat = imgd.data;
+    for (let py = 0; py < n; py++) {
+        for (let px = 0; px < n; px++) {
+            const dn = grid[py][px] / maxD;
+            const c = warmCmap(dn);
+            const idx = (py * n + px) * 4;
+            dat[idx]     = c[0];
+            dat[idx + 1] = c[1];
+            dat[idx + 2] = c[2];
+            dat[idx + 3] = Math.round(c[3] * 255);
+        }
+    }
+    ctx.putImageData(imgd, 0, 0);
+    const img = el('image', {
+        x: x, y: y, width: w, height: h,
+        'preserveAspectRatio': 'none'
+    }, parent);
+    img.setAttributeNS('http://www.w3.org/1999/xlink', 'href', can.toDataURL());
+    img.setAttribute('href', can.toDataURL());
+}
+const MS_TABLE = [
+    null,
+    [['l','t']], [['t','r']], [['l','r']],
+    [['r','b']], [['l','t'], ['r','b']], [['t','b']],
+    [['l','b']], [['l','b']], [['t','b']],
+    [['l','t'], ['r','b']], [['r','b']],
+    [['l','r']], [['t','r']], [['l','t']],
+    null
+];
+function renderDensityContours(parent, x, y, w, h, grid, maxD) {
+    const n = grid.length;
+    if (maxD < 1e-9) return;
+    const levels = [0.06, 0.16, 0.30, 0.48, 0.70].map(f => f * maxD);
+    const dx = w / (n - 1);
+    const dy = h / (n - 1);
+    for (let li = 0; li < levels.length; li++) {
+        const level = levels[li];
+        let d = '';
+        for (let r = 0; r < n - 1; r++) {
+            for (let c = 0; c < n - 1; c++) {
+                const v0 = grid[r][c];
+                const v1 = grid[r][c + 1];
+                const v2 = grid[r + 1][c + 1];
+                const v3 = grid[r + 1][c];
+                let code = 0;
+                if (v0 > level) code |= 1;
+                if (v1 > level) code |= 2;
+                if (v2 > level) code |= 4;
+                if (v3 > level) code |= 8;
+                const ent = MS_TABLE[code];
+                if (!ent) continue;
+                const px0 = x + c * dx;
+                const py0 = y + r * dy;
+                const ptT = [px0 + dx * (level - v0) / (v1 - v0), py0];
+                const ptR = [px0 + dx, py0 + dy * (level - v1) / (v2 - v1)];
+                const ptB = [px0 + dx * (level - v3) / (v2 - v3), py0 + dy];
+                const ptL = [px0, py0 + dy * (level - v0) / (v3 - v0)];
+                const pts = { t: ptT, r: ptR, b: ptB, l: ptL };
+                for (let k = 0; k < ent.length; k++) {
+                    const [aa, bb] = ent[k];
+                    const pa = pts[aa], pb = pts[bb];
+                    d += 'M' + pa[0].toFixed(1) + ' ' + pa[1].toFixed(1)
+                       + 'L' + pb[0].toFixed(1) + ' ' + pb[1].toFixed(1);
+                }
+            }
+        }
+        if (d) {
+            el('path', {
+                d: d,
+                fill: 'none', stroke: '#D4A054',
+                'stroke-width': 0.55, opacity: 0.55,
+            }, parent);
+        }
+    }
+}
+
+/* =========================================================================
    FIG 2 — Conceptual illustration (kept from previous)
    ========================================================================= */
 function renderFig2() {
@@ -703,154 +835,7 @@ function renderFig2() {
             };
         });
     });
-    arrowHead(svg, 'fig2-arrow', '#888');
-
-    /* ----- Gaussian-mixture density helpers (match elf_teaser.py) -----
-       Render the SUM of Gaussians (one per cluster, normalized by N) as:
-         (1) a warm-cmap canvas image — soft filled contours
-         (2) marching-squares iso-contour lines on top
-       so panels show ONE merged density (not three overlapping ring-sets). */
-    function gaussMixGrid(centers, sigma, w, h, n) {
-        const grid = new Array(n);
-        let maxD = 0;
-        const inv2s2 = 1 / (2 * sigma * sigma);
-        for (let py = 0; py < n; py++) {
-            const row = new Array(n);
-            const fy = (py / (n - 1)) * h;
-            for (let px = 0; px < n; px++) {
-                const fx = (px / (n - 1)) * w;
-                let d = 0;
-                for (let k = 0; k < centers.length; k++) {
-                    const ddx = fx - centers[k][0];
-                    const ddy = fy - centers[k][1];
-                    d += Math.exp(-(ddx * ddx + ddy * ddy) * inv2s2);
-                }
-                d /= centers.length;
-                row[px] = d;
-                if (d > maxD) maxD = d;
-            }
-            grid[py] = row;
-        }
-        return { grid: grid, maxD: maxD };
-    }
-    /* Warm cmap: white → light peach → orange (alpha grows with density). */
-    const WARM_STOPS = [
-        [0.00, [255, 255, 255], 0.00],
-        [0.10, [255, 243, 224], 0.12],
-        [0.30, [255, 224, 178], 0.26],
-        [0.55, [255, 204, 128], 0.38],
-        [0.80, [255, 183,  77], 0.46],
-        [1.00, [232, 153,  64], 0.52],
-    ];
-    function warmCmap(dn) {
-        if (dn <= 0) return [255, 255, 255, 0];
-        if (dn >= 1) {
-            const s = WARM_STOPS[WARM_STOPS.length - 1];
-            return [s[1][0], s[1][1], s[1][2], s[2]];
-        }
-        for (let i = 0; i < WARM_STOPS.length - 1; i++) {
-            if (dn >= WARM_STOPS[i][0] && dn <= WARM_STOPS[i + 1][0]) {
-                const a = WARM_STOPS[i], b = WARM_STOPS[i + 1];
-                const t = (dn - a[0]) / (b[0] - a[0]);
-                return [
-                    a[1][0] + (b[1][0] - a[1][0]) * t,
-                    a[1][1] + (b[1][1] - a[1][1]) * t,
-                    a[1][2] + (b[1][2] - a[1][2]) * t,
-                    a[2]    + (b[2]    - a[2]   ) * t,
-                ];
-            }
-        }
-        return [255, 255, 255, 0];
-    }
-    function renderDensityFill(parent, x, y, w, h, grid, maxD) {
-        const n = grid.length;
-        if (maxD < 1e-9) return;
-        const can = document.createElement('canvas');
-        can.width = n;
-        can.height = n;
-        const ctx = can.getContext('2d');
-        const imgd = ctx.createImageData(n, n);
-        const dat = imgd.data;
-        for (let py = 0; py < n; py++) {
-            for (let px = 0; px < n; px++) {
-                const dn = grid[py][px] / maxD;
-                const [r, g, b, a] = warmCmap(dn);
-                const idx = (py * n + px) * 4;
-                dat[idx]     = r;
-                dat[idx + 1] = g;
-                dat[idx + 2] = b;
-                dat[idx + 3] = Math.round(a * 255);
-            }
-        }
-        ctx.putImageData(imgd, 0, 0);
-        const img = el('image', {
-            x: x, y: y, width: w, height: h,
-            'preserveAspectRatio': 'none'
-        }, parent);
-        img.setAttributeNS('http://www.w3.org/1999/xlink', 'href', can.toDataURL());
-        img.setAttribute('href', can.toDataURL());
-    }
-    /* Marching-squares iso-contour lines */
-    const MS_TABLE = [
-        null,
-        [['l','t']], [['t','r']], [['l','r']],
-        [['r','b']], [['l','t'], ['r','b']], [['t','b']],
-        [['l','b']], [['l','b']], [['t','b']],
-        [['l','t'], ['r','b']], [['r','b']],
-        [['l','r']], [['t','r']], [['l','t']],
-        null
-    ];
-    /* Emit ONE <path> per contour level (instead of hundreds of <line>s).
-       In SVG a single path 'd' can contain disjoint M/L segments via
-       repeated 'M' commands, so this is identical visually but cuts DOM
-       node count by ~3 orders of magnitude — the slide had been emitting
-       thousands of <line> nodes per panel which made transitions choppy. */
-    function renderDensityContours(parent, x, y, w, h, grid, maxD) {
-        const n = grid.length;
-        if (maxD < 1e-9) return;
-        const levels = [0.06, 0.16, 0.30, 0.48, 0.70].map(f => f * maxD);
-        const dx = w / (n - 1);
-        const dy = h / (n - 1);
-        for (let li = 0; li < levels.length; li++) {
-            const level = levels[li];
-            let d = '';
-            for (let r = 0; r < n - 1; r++) {
-                for (let c = 0; c < n - 1; c++) {
-                    const v0 = grid[r][c];
-                    const v1 = grid[r][c + 1];
-                    const v2 = grid[r + 1][c + 1];
-                    const v3 = grid[r + 1][c];
-                    let code = 0;
-                    if (v0 > level) code |= 1;
-                    if (v1 > level) code |= 2;
-                    if (v2 > level) code |= 4;
-                    if (v3 > level) code |= 8;
-                    const ent = MS_TABLE[code];
-                    if (!ent) continue;
-                    const px0 = x + c * dx;
-                    const py0 = y + r * dy;
-                    const ptT = [px0 + dx * (level - v0) / (v1 - v0), py0];
-                    const ptR = [px0 + dx, py0 + dy * (level - v1) / (v2 - v1)];
-                    const ptB = [px0 + dx * (level - v3) / (v2 - v3), py0 + dy];
-                    const ptL = [px0, py0 + dy * (level - v0) / (v3 - v0)];
-                    const pts = { t: ptT, r: ptR, b: ptB, l: ptL };
-                    for (let k = 0; k < ent.length; k++) {
-                        const [aa, bb] = ent[k];
-                        const pa = pts[aa], pb = pts[bb];
-                        d += 'M' + pa[0].toFixed(1) + ' ' + pa[1].toFixed(1)
-                           + 'L' + pb[0].toFixed(1) + ' ' + pb[1].toFixed(1);
-                    }
-                }
-            }
-            if (d) {
-                el('path', {
-                    d: d,
-                    fill: 'none', stroke: '#D4A054',
-                    'stroke-width': 0.55, opacity: 0.55,
-                }, parent);
-            }
-        }
-    }
+    arrowHead(svg, 'fig2-arrow', '#888', { size: 7 });
 
     /* trajectory lines (skip last segment — uses dashed cluster→vertex arrows) */
     const trajLayer = el('g', { opacity: 0.35 }, svg);
@@ -969,7 +954,392 @@ function renderFig2() {
 }
 
 /* =========================================================================
-   SLIDE 2 — Setup the running example
+   SLIDE 2 — 3D tube view of the same single-token flow.
+   Each panel is rendered as an oblique (parallelogram) 2D embedding slice.
+   The horizontal direction *across* panels is the time axis t — never an
+   embedding axis. Inside each panel, particle positions (ex, ey) are mapped
+   through the panel's parallelogram transform so they live in the slice.
+   ========================================================================= */
+function renderFig2_3D() {
+    const svg = document.getElementById('fig2-3d-svg');
+    if (!svg) return;
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    /* Cancel any previous group-flow animation so re-rendering doesn't leave
+       multiple loops running simultaneously. */
+    if (window.__fig2_3d_cancellers) {
+        window.__fig2_3d_cancellers.forEach(fn => { try { fn(); } catch (e) {} });
+    }
+    window.__fig2_3d_cancellers = [];
+    const VW = 1240, VH = 410;
+    svg.setAttribute('viewBox', `0 0 ${VW} ${VH}`);
+    arrowHead(svg, 'fig2-3d-arrow', '#666', { size: 7 });
+
+    const TIMES = [0.00, 0.25, 0.50, 0.99, 1.00];
+    /* L = 3 sequence positions stacked along the depth axis (one slice each).
+       Each slice has its OWN 3-vocab simplex:
+         pos 1 (front): cat   / dog   / bird
+         pos 2 (mid):   is    / are   / was
+         pos 3 (back):  sad   / happy / kind
+       Within each slice, particles split 4/4/4 across the 3 clusters
+       (rank-preserving y-sort) so the data is genuinely 3-modal. */
+    const SEQ_LEN = 3;
+    const PER_CLUSTER = 6;
+    const N_PER_SEQ = PER_CLUSTER * 3;   /* 18 particles per layer (≈ slide 1 density) */
+
+    /* CABINET projection: vertical sides are STRAIGHT, horizontal top/bottom
+       edges are TILTED by SKEW_Y. The right side of each panel is lifted up
+       by |SKEW_Y|, so each panel "leans back". */
+    /* Panels narrowed again to 3/4 of the previous PW (86 → 64). PH kept
+       the same — only the horizontal axis shortens. */
+    const PW = 64, PH = 120;
+    const SKEW_Y = -50;            /* right side lifted up by 50 px */
+    /* Stronger horizontal offset BETWEEN LAYERS (within a time step) so the
+       3 stacked slices spread out sideways and the depth axis feels really
+       horizontal rather than top-heavy. */
+    const DDX = Math.round(0.75 * PW);  /* 48  (within-step horizontal offset) */
+    const DDY = -Math.round(0.46 * PH); /* −55  (vertical offset between layers, extended) */
+    /* PANEL_GAP between time steps reverted to baseline — no more extension. */
+    const PANEL_GAP = 2 * DDX + 50;     /* 146 */
+
+    /* === Each layer has its OWN simplex shape === */
+    /* (apex direction differs per layer to make them visually distinct) */
+    const R = 18;                  /* simplex radius — fits PW=64 */
+    /* Layer 0: cat   / dog   / bird   — apex UP        ▲ */
+    /* Layer 1: is    / are   / was    — rotated 90° (apex DOWN ▼)
+                                          so labels clear the front slice */
+    /* Layer 2: sad   / happy / kind   — apex DOWN      ▼ */
+    const SIMPLEX_BY_LAYER = [
+        [
+            { ex:           0, ey: -R,        lex:                0, ley: -R - 14 },
+            { ex: -R * 0.866, ey: +R * 0.5,   lex: -R * 0.866 - 18, ley: +R * 0.5 + 14 },
+            { ex: +R * 0.866, ey: +R * 0.5,   lex: +R * 0.866 + 18, ley: +R * 0.5 + 14 }
+        ],
+        [
+            /* Layer 1 rotated 90°: each (x, y) → (-y, x).
+               Was: { (-R, -R/2), (-R, +R/2), (+R, 0) }  — apex right
+               Now: { (+R/2, -R), (-R/2, -R), (0, +R) }  — apex down */
+            { ex:  R * 0.5,    ey: -R,        lex:  R * 0.5 + 6,    ley: -R - 16 },
+            { ex: -R * 0.5,    ey: -R,        lex: -R * 0.5 - 12,   ley: -R - 16 },
+            { ex:           0, ey: +R,        lex:                -4, ley: +R + 18 }
+        ],
+        [
+            { ex: -R * 0.866, ey: -R * 0.5,   lex: -R * 0.866 - 18, ley: -R * 0.5 - 6 },
+            { ex: +R * 0.866, ey: -R * 0.5,   lex: +R * 0.866 + 18, ley: -R * 0.5 - 6 },
+            { ex:           0, ey: +R,        lex:                0, ley: +R + 14 }
+        ]
+    ];
+    const VOCAB_LABELS = [
+        ['cat',  'dog',   'bird'],
+        ['is',   'are',   'was' ],
+        ['sad',  'happy', 'kind']
+    ];
+    const VOCAB_BY_LAYER = SIMPLEX_BY_LAYER.map((simplex, q) =>
+        simplex.map((v, i) => Object.assign({}, v, { name: VOCAB_LABELS[q][i] }))
+    );
+
+    const totalW = TIMES.length * PW + (TIMES.length - 1) * PANEL_GAP
+                 + (SEQ_LEN - 1) * DDX;
+    /* Vertical extent: PH + the depth stack + the SKEW_Y screen lift */
+    const totalH = PH + (SEQ_LEN - 1) * Math.abs(DDY) + Math.abs(SKEW_Y);
+    const startX = (VW - totalW) / 2;
+    const startY = (VH - totalH) / 2 + Math.abs(SKEW_Y) + (SEQ_LEN - 1) * Math.abs(DDY);
+
+    /* Per-position particles, rank-preservingly assigned to the 3 simplex
+       vertices in chunks of PER_CLUSTER. */
+    let s = 7777;
+    const rnd = () => { s = (s * 9301 + 49297) % 233280; return s / 233280; };
+    const gauss = () => Math.sqrt(-2 * Math.log(1 - rnd())) * Math.cos(2 * Math.PI * rnd());
+    const partsBySeq = [];
+    for (let q = 0; q < SEQ_LEN; q++) {
+        s = 7777 + q * 911;
+        const vocab = VOCAB_BY_LAYER[q];
+        /* sort vocab vertices by ey ascending so rank-by-ey assignment of
+           particles to clusters keeps the y-rank-preserving (no-crossings)
+           property even when the simplex shape rotates per layer. */
+        const vocabSorted = vocab.slice().sort((a, b) => a.ey - b.ey);
+        const parts = [];
+        for (let i = 0; i < N_PER_SEQ; i++) {
+            parts.push({ ex: gauss() * 12, ey: gauss() * 22 });
+        }
+        parts.sort((a, b) => a.ey - b.ey);   /* rank by y */
+        parts.forEach((p, i) => {
+            const cluster = Math.floor(i / PER_CLUSTER);
+            const target = vocabSorted[cluster];   /* assign by sorted-by-ey */
+            p.cluster = cluster;
+            p.posByT = TIMES.map(t => ({
+                ex: (1 - t) * p.ex + t * target.ex,
+                ey: (1 - t) * p.ey + t * target.ey
+            }));
+        });
+        partsBySeq.push(parts);
+    }
+
+    /* Cabinet projection: vertical sides stay straight, horizontal edges
+       tilt by SKEW_Y per panel-width. A point at panel-relative (ex, ey)
+       (where (0,0) is panel center) gets its screen y lifted by
+       (panel_x_rel / PW) * SKEW_Y — i.e. right edge lifted by SKEW_Y. */
+    function projPanel(panelX, panelY, ex, ey) {
+        const ix = PW / 2 + ex;
+        const iy = PH / 2 + ey;
+        return {
+            x: panelX + ix,
+            y: panelY + iy + (ix / PW) * SKEW_Y
+        };
+    }
+    /* Parallelogram path with vertical left/right and slanted top/bottom. */
+    function panelPath(px, py) {
+        return `M ${px} ${py + PH} `                       /* bottom-left  */
+             + `L ${px + PW} ${py + PH + SKEW_Y} `         /* bottom-right */
+             + `L ${px + PW} ${py + SKEW_Y} `              /* top-right    */
+             + `L ${px} ${py} Z`;                          /* top-left     */
+    }
+
+    /* ===== Render layers from BACK (q = SEQ_LEN-1) to FRONT (q = 0) ===== */
+    for (let q = SEQ_LEN - 1; q >= 0; q--) {
+        const offX = q * DDX;
+        const offY = q * DDY;
+        const opacity = q === 0 ? 0.92 : 0.6 + 0.12 * (SEQ_LEN - 1 - q);
+        const vocab = VOCAB_BY_LAYER[q];
+        const parts = partsBySeq[q];
+        const isFront = (q === 0);
+
+        const layerG = el('g', {
+            transform: `translate(${offX}, ${offY})`,
+            opacity: opacity
+        }, svg);
+
+        /* Position label, just left of the t=0 slice for this layer */
+        {
+            const labP = projPanel(startX, startY, -PW / 2 - 6, -PH / 2 - 4);
+            tx(layerG, labP.x - 4, labP.y - 6, `pos ${q + 1}`,
+                { size: 11, fill: '#666', style: 'italic', anchor: 'end' });
+        }
+
+        TIMES.forEach((t, j) => {
+            const px = startX + j * (PW + PANEL_GAP);
+            const py = startY;
+
+            /* slice parallelogram */
+            el('path', {
+                d: panelPath(px, py),
+                fill: '#ffffff',
+                stroke: isFront ? '#888' : '#c4cad3',
+                'stroke-width': isFront ? 1 : 0.7
+            }, layerG);
+
+            /* (Top per-panel "t = 0.00" labels removed — only the bottom
+               t-axis tick labels remain.) */
+
+            /* Density — Gaussian mixture rendered exactly like slide 1
+               (renderFig2): warm-cmap rasterised fill + marching-squares
+               iso-contour lines on top. The fill+lines live inside a
+               matrix-transform group that re-projects panel-relative
+               coordinates onto this slice's cabinet-skewed parallelogram.
+               Drawn on EVERY layer; the layerG opacity already attenuates
+               back layers so the 3D depth still reads. */
+            if (t < 1.00) {
+                /* Sigma decay matches elf_teaser.py:
+                   σ = σ_min + (σ_max − σ_min)·(1−t)³, scaled to PW=64. */
+                const sigma = 3 + (18 - 3) * Math.pow(1 - t, 3);
+                /* Cluster centres in panel-relative (0..PW, 0..PH) coords. */
+                const centersLocal = vocab.map(v => [
+                    PW / 2 + v.ex * t,
+                    PH / 2 + v.ey * t,
+                ]);
+                const { grid: dGrid, maxD } =
+                    gaussMixGrid(centersLocal, sigma, PW, PH, 48);
+                /* Map panel-rel → cabinet-skewed screen coords for THIS
+                   layer (the layerG translate handles the depth offset). */
+                const skewG = el('g', {
+                    transform: `matrix(1 ${SKEW_Y / PW} 0 1 ${px} ${py})`
+                }, layerG);
+                renderDensityFill(skewG, 0, 0, PW, PH, dGrid, maxD);
+                renderDensityContours(skewG, 0, 0, PW, PH, dGrid, maxD);
+            }
+
+            /* Final slice (t = 1): full simplex with all 3 labeled vertices */
+            if (t === 1.00) {
+                const corners = vocab.map(v => projPanel(px, py, v.ex, v.ey));
+                el('polygon', {
+                    points: corners.map(c => `${c.x},${c.y}`).join(' '),
+                    fill: '#fdeed8', stroke: '#e07a30',
+                    'stroke-width': isFront ? 1.4 : 1.0,
+                    opacity: isFront ? 0.55 : 0.4
+                }, layerG);
+                vocab.forEach(v => {
+                    const c = projPanel(px, py, v.ex, v.ey);
+                    el('circle', {
+                        cx: c.x, cy: c.y, r: 4,
+                        fill: '#e07a30', stroke: '#fff', 'stroke-width': 1.2
+                    }, layerG);
+                    const lab = projPanel(px, py, v.lex, v.ley);
+                    tx(layerG, lab.x, lab.y, v.name,
+                        { size: 12, fill: '#444', style: 'italic',
+                          weight: isFront ? 600 : 400 });
+                });
+            } else {
+                /* Particles inside the slice */
+                parts.forEach(p => {
+                    const pp = p.posByT[j];
+                    const c = projPanel(px, py, pp.ex, pp.ey);
+                    el('circle', {
+                        cx: c.x, cy: c.y, r: 2.3,
+                        fill: '#e07a30', opacity: isFront ? 0.85 : 0.7
+                    }, layerG);
+                });
+            }
+        });
+
+        /* Trajectory lines on EVERY layer (fainter for back layers) so the
+           viewer can clearly see particles flowing in sync at every depth. */
+        const trajOpacity = isFront ? 0.45 : (q === 1 ? 0.32 : 0.22);
+        for (let j = 0; j < TIMES.length - 2; j++) {
+            const px1 = startX + j * (PW + PANEL_GAP);
+            const px2 = startX + (j + 1) * (PW + PANEL_GAP);
+            parts.forEach(p => {
+                const a = projPanel(px1, startY, p.posByT[j].ex,   p.posByT[j].ey);
+                const b = projPanel(px2, startY, p.posByT[j+1].ex, p.posByT[j+1].ey);
+                el('line', {
+                    x1: a.x, y1: a.y, x2: b.x, y2: b.y,
+                    stroke: '#6a5acd', 'stroke-width': 0.55, opacity: trajOpacity
+                }, layerG);
+            });
+        }
+        /* Cluster→vertex dashed discretization arrows: front layer only
+           (drawing them 3× would clutter the t=0.99 → t=1 transition). */
+        if (isFront) {
+            const j = TIMES.length - 2;
+            const px1 = startX + j * (PW + PANEL_GAP);
+            const px2 = startX + (j + 1) * (PW + PANEL_GAP);
+            vocab.forEach(v => {
+                const a = projPanel(px1, startY, v.ex, v.ey);
+                const b = projPanel(px2, startY, v.ex, v.ey);
+                const mx = (a.x + b.x) / 2;
+                const my = (a.y + b.y) / 2 - 18;
+                el('path', {
+                    d: `M ${a.x} ${a.y} Q ${mx} ${my} ${b.x - 6} ${b.y}`,
+                    fill: 'none', stroke: '#888',
+                    'stroke-width': 0.9, 'stroke-dasharray': '4,3',
+                    'marker-end': 'url(#fig2-3d-arrow)'
+                }, layerG);
+            });
+        }
+    }
+
+    /* ===== Time axis arrow at the bottom (drawn on the BASE coord system,
+       not inside any layer transform) ===== */
+    const taY = startY + PH + 36;
+    const taX1 = startX;
+    const taX2 = startX + (TIMES.length - 1) * (PW + PANEL_GAP) + PW + 6;
+    el('line', {
+        x1: taX1, y1: taY, x2: taX2, y2: taY,
+        stroke: '#444', 'stroke-width': 1.4,
+        'marker-end': 'url(#fig2-3d-arrow)'
+    }, svg);
+    TIMES.forEach((t, j) => {
+        const px = startX + j * (PW + PANEL_GAP) + PW / 2;
+        el('line', {
+            x1: px, y1: taY - 4, x2: px, y2: taY + 4,
+            stroke: '#444', 'stroke-width': 1
+        }, svg);
+        tx(svg, px, taY + 16, t.toFixed(2),
+            { size: 10, fill: '#666', style: 'italic' });
+    });
+    tx(svg, taX1 - 12, taY + 4, 't',
+        { size: 14, fill: '#444', style: 'italic', anchor: 'end' });
+
+    /* ===== Synchronized 3-dot group animation =====
+       3 purple dots (one per layer) flow through the tube IN SYNC. Each
+       cycle: a fresh random group config — random Gaussian start per layer,
+       random vocab vertex target per layer — so each cycle ends at a
+       different generated sentence. Longer pause between groups. */
+    {
+        const dots = [];
+        for (let q = 0; q < SEQ_LEN; q++) {
+            const dot = el('circle', {
+                r: 5, fill: '#6a5acd', stroke: '#fff',
+                'stroke-width': 1.2, opacity: 0,
+                cx: 0, cy: 0
+            }, svg);
+            dots.push(dot);
+        }
+
+        /* Independent RNG so each cycle is genuinely different. */
+        let animSeed = (Date.now() & 0xffff) ^ 5151;
+        const arnd  = () => { animSeed = (animSeed * 9301 + 49297) % 233280; return animSeed / 233280; };
+        const agauss = () => Math.sqrt(-2 * Math.log(1 - arnd())) * Math.cos(2 * Math.PI * arnd());
+
+        const FLOW_DUR  = 3500;   /* ms — group flowing across all 5 slices */
+        const PAUSE_DUR = 1800;   /* ms — pause before next group starts */
+        const FADE_PAD  = 0.06;   /* fade-in/out fraction of FLOW_DUR */
+
+        function buildGroup() {
+            const layers = [];
+            for (let q = 0; q < SEQ_LEN; q++) {
+                const noise = { ex: agauss() * 16, ey: agauss() * 22 };
+                const targetIdx = Math.floor(arnd() * 3);
+                const target = VOCAB_BY_LAYER[q][targetIdx];
+                /* Pre-compute the projected (screen) point at each timestep.
+                   The dot will linearly interpolate between successive points. */
+                const path = [];
+                for (let j = 0; j < TIMES.length; j++) {
+                    const t = TIMES[j];
+                    const ex = (1 - t) * noise.ex + t * target.ex;
+                    const ey = (1 - t) * noise.ey + t * target.ey;
+                    const px_j = startX + j * (PW + PANEL_GAP);
+                    const c = projPanel(px_j, startY, ex, ey);
+                    path.push({ x: c.x + q * DDX, y: c.y + q * DDY });
+                }
+                layers.push(path);
+            }
+            return layers;
+        }
+
+        let cancelled = false;
+        let pendingTimer = null;
+        window.__fig2_3d_cancellers.push(() => {
+            cancelled = true;
+            if (pendingTimer) clearTimeout(pendingTimer);
+        });
+
+        function step(layers, t0) {
+            if (cancelled) return;
+            const elapsed = Date.now() - t0;
+            if (elapsed >= FLOW_DUR) {
+                dots.forEach(d => d.setAttribute('opacity', 0));
+                pendingTimer = setTimeout(
+                    () => { pendingTimer = null; step(buildGroup(), Date.now()); },
+                    PAUSE_DUR);
+                return;
+            }
+            const u = elapsed / FLOW_DUR;          /* 0 .. 1 */
+            let opAlpha = 1;
+            if (u < FADE_PAD)         opAlpha = u / FADE_PAD;
+            else if (u > 1 - FADE_PAD) opAlpha = (1 - u) / FADE_PAD;
+
+            for (let q = 0; q < SEQ_LEN; q++) {
+                const path = layers[q];
+                const segCount = path.length - 1;             /* 4 */
+                const segIdx   = Math.min(segCount - 1, Math.floor(u * segCount));
+                const segLocal = u * segCount - segIdx;
+                const a = path[segIdx], b = path[segIdx + 1];
+                dots[q].setAttribute('cx', (a.x + (b.x - a.x) * segLocal).toFixed(2));
+                dots[q].setAttribute('cy', (a.y + (b.y - a.y) * segLocal).toFixed(2));
+                dots[q].setAttribute('opacity',
+                    opAlpha * (q === 0 ? 0.95 : (q === 1 ? 0.78 : 0.62)));
+            }
+            requestAnimationFrame(() => step(layers, t0));
+        }
+
+        /* Kick off the first cycle shortly after render. */
+        pendingTimer = setTimeout(
+            () => { pendingTimer = null; step(buildGroup(), Date.now()); },
+            300);
+    }
+}
+
+/* =========================================================================
+   SLIDE 3 — Setup the running example
    ========================================================================= */
 function renderExSetup() {
     const svg = document.getElementById('ex-setup-svg');
@@ -2023,10 +2393,9 @@ function renderAll() {
     if (_rendered) return;
     _rendered = true;
     const fns = [
-        renderFig2,
+        renderFig2, renderFig2_3D,
         renderTrain1, renderTrain2, renderTrain3, renderTrain4,
         renderSamp2, renderSamp3,
-        renderDetailSC, renderDetailCtrl,
         function genDemoSeed() { buildGenDemo(); applyGenStep(0); }
     ];
     fns.forEach(fn => { try { fn(); } catch (e) { console.error(fn.name, e); } });
