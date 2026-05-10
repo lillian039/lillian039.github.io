@@ -1066,9 +1066,14 @@ function renderFig2_3D() {
             const cluster = Math.floor(i / PER_CLUSTER);
             const target = vocabSorted[cluster];   /* assign by sorted-by-ey */
             p.cluster = cluster;
+            /* Per-particle target jitter so each cluster is a visible CLOUD
+               at t≈1 (matches slide 1 / elf_teaser.py — particles never
+               collapse to a single point). Jitter scaled to fit PW=64. */
+            const tjx = (rnd() - 0.5) * 9;
+            const tjy = (rnd() - 0.5) * 7;
             p.posByT = TIMES.map(t => ({
-                ex: (1 - t) * p.ex + t * target.ex,
-                ey: (1 - t) * p.ey + t * target.ey
+                ex: (1 - t) * p.ex + t * (target.ex + tjx),
+                ey: (1 - t) * p.ey + t * (target.ey + tjy)
             }));
         });
         partsBySeq.push(parts);
@@ -1224,6 +1229,66 @@ function renderFig2_3D() {
                 }, layerG);
             });
         }
+    }
+
+    /* ===== Full-attention arcs between layers, per time step =====
+       Within a single time step, every token attends to every other token
+       (full self-attention). Each arc anchors at the CENTRE of every
+       panel and bows outward to the RIGHT — so the arrowheads land on
+       the data, not on the panel edge. The 3 arcs nest cleanly: the
+       front↔back arc bows further out than the two adjacent-layer arcs. */
+    {
+        const defs = svg.querySelector('defs') || el('defs', null, svg);
+        if (!svg.querySelector('defs')) svg.insertBefore(defs, svg.firstChild);
+        if (!defs.querySelector('#fig2-3d-attn-tip')) {
+            const m = el('marker', {
+                id: 'fig2-3d-attn-tip',
+                viewBox: '0 0 10 10',
+                refX: 8.5, refY: 5,
+                markerWidth: 4.5, markerHeight: 4.5,
+                orient: 'auto-start-reverse'
+            }, defs);
+            el('path', { d: 'M0,2 L9,5 L0,8 z',
+                fill: '#D4A054' }, m);
+        }
+
+        TIMES.forEach((t, j) => {
+            const px = startX + j * (PW + PANEL_GAP);
+            const py = startY;
+            /* Anchor each arc at the CENTRE of every panel (in cabinet-
+               projected coords), with the depth offset added per layer. */
+            const anchors = [];
+            for (let q = 0; q < SEQ_LEN; q++) {
+                const a = projPanel(px, py, 0, 0);
+                anchors.push({
+                    x: a.x + q * DDX,
+                    y: a.y + q * DDY
+                });
+            }
+            for (let i = 0; i < SEQ_LEN; i++) {
+                for (let k = i + 1; k < SEQ_LEN; k++) {
+                    const a = anchors[i], b = anchors[k];
+                    const dy = Math.abs(b.y - a.y);
+                    /* Bow large enough to clear the panel right edge AND
+                       give the arcs a noticeably arcy curvature. */
+                    const bow = (PW / 2 + 36) + 0.40 * dy;
+                    const mx = (a.x + b.x) / 2 + bow;
+                    const my = (a.y + b.y) / 2;
+                    el('path', {
+                        d: `M ${a.x.toFixed(1)} ${a.y.toFixed(1)} `
+                         + `Q ${mx.toFixed(1)} ${my.toFixed(1)} `
+                         + `${b.x.toFixed(1)} ${b.y.toFixed(1)}`,
+                        fill: 'none',
+                        stroke: '#D4A054',
+                        'stroke-width': 1.0,
+                        'stroke-dasharray': '4,3',
+                        opacity: 0.75,
+                        'marker-start': 'url(#fig2-3d-attn-tip)',
+                        'marker-end':   'url(#fig2-3d-attn-tip)'
+                    }, svg);
+                }
+            }
+        });
     }
 
     /* ===== Time axis arrow at the bottom (drawn on the BASE coord system,
