@@ -1423,10 +1423,90 @@ function renderFig2_3D() {
    offsets, and back-layer opacity all multiplied by a `progress` factor.
    At progress=0 it collapses to a single flat row (looks like the 2D
    slide 1 visual); at progress=1 it matches the slide 2 3D view.
-   Re-rendered ~30 fps from a requestAnimationFrame loop.
-   No density grid / no dot animation / no attention arcs — kept light so
-   per-frame cost stays cheap. Fade-in/out applies to particles+lines too. */
-function renderFig2Transition(progress) {
+   Re-rendered ~30 fps from a requestAnimationFrame loop. Density (warm-cmap
+   fill + orange iso-contours) is precomputed once and the data URLs +
+   contour path strings are cached, so per-frame cost stays cheap. */
+let _transDensityCache = null;
+function _buildTransDensityCache(VOCAB_BY_LAYER, PW, PH, TIMES) {
+    const N_GRID = 36;
+    const cache = [];
+    for (let q = 0; q < VOCAB_BY_LAYER.length; q++) {
+        const layerCache = [];
+        for (let j = 0; j < TIMES.length; j++) {
+            const t = TIMES[j];
+            if (t >= 1) { layerCache.push(null); continue; }
+            const sigma = 3 + (18 - 3) * Math.pow(1 - t, 3);
+            const vocab = VOCAB_BY_LAYER[q];
+            const centersLocal = vocab.map(v => [
+                PW / 2 + v.ex * t, PH / 2 + v.ey * t
+            ]);
+            const { grid, maxD } = gaussMixGrid(
+                centersLocal, sigma, PW, PH, N_GRID);
+            /* fill → canvas → data URL */
+            const can = document.createElement('canvas');
+            can.width = N_GRID; can.height = N_GRID;
+            const ctx = can.getContext('2d');
+            const imgd = ctx.createImageData(N_GRID, N_GRID);
+            const dat = imgd.data;
+            const safeMax = Math.max(maxD, 1e-9);
+            for (let py = 0; py < N_GRID; py++) {
+                for (let px = 0; px < N_GRID; px++) {
+                    const c = warmCmap(grid[py][px] / safeMax);
+                    const idx = (py * N_GRID + px) * 4;
+                    dat[idx]     = c[0];
+                    dat[idx + 1] = c[1];
+                    dat[idx + 2] = c[2];
+                    dat[idx + 3] = Math.round(c[3] * 255);
+                }
+            }
+            ctx.putImageData(imgd, 0, 0);
+            const dataURL = can.toDataURL();
+            /* contour paths via marching squares */
+            const contourPaths = [];
+            if (maxD >= 1e-9) {
+                const levels = [0.06, 0.16, 0.30, 0.48, 0.70].map(f => f * maxD);
+                const dx = PW / (N_GRID - 1);
+                const dy = PH / (N_GRID - 1);
+                for (const level of levels) {
+                    let d = '';
+                    for (let r = 0; r < N_GRID - 1; r++) {
+                        for (let c = 0; c < N_GRID - 1; c++) {
+                            const v0 = grid[r][c];
+                            const v1 = grid[r][c + 1];
+                            const v2 = grid[r + 1][c + 1];
+                            const v3 = grid[r + 1][c];
+                            let code = 0;
+                            if (v0 > level) code |= 1;
+                            if (v1 > level) code |= 2;
+                            if (v2 > level) code |= 4;
+                            if (v3 > level) code |= 8;
+                            const ent = MS_TABLE[code];
+                            if (!ent) continue;
+                            const px0 = c * dx, py0 = r * dy;
+                            const ptT = [px0 + dx * (level - v0) / (v1 - v0), py0];
+                            const ptR = [px0 + dx, py0 + dy * (level - v1) / (v2 - v1)];
+                            const ptB = [px0 + dx * (level - v3) / (v2 - v3), py0 + dy];
+                            const ptL = [px0, py0 + dy * (level - v0) / (v3 - v0)];
+                            const pts = { t: ptT, r: ptR, b: ptB, l: ptL };
+                            for (let k = 0; k < ent.length; k++) {
+                                const [aa, bb] = ent[k];
+                                const pa = pts[aa], pb = pts[bb];
+                                d += 'M' + pa[0].toFixed(1) + ' ' + pa[1].toFixed(1)
+                                   + 'L' + pb[0].toFixed(1) + ' ' + pb[1].toFixed(1);
+                            }
+                        }
+                    }
+                    contourPaths.push(d);
+                }
+            }
+            layerCache.push({ dataURL: dataURL, contourPaths: contourPaths });
+        }
+        cache.push(layerCache);
+    }
+    return cache;
+}
+function renderFig2Transition(progress, dotPhase) {
+    if (typeof dotPhase !== 'number') dotPhase = 0;
     const svg = document.getElementById('fig2-trans-svg');
     if (!svg) return;
     while (svg.firstChild) svg.removeChild(svg.firstChild);
@@ -1437,24 +1517,52 @@ function renderFig2Transition(progress) {
     const SEQ_LEN = 3;
     const PER_CLUSTER = 6;
     const N_PER_SEQ = PER_CLUSTER * 3;
-    const PW = 64, PH = 120;
+    const PH = 120;
 
-    /* Full-3D constants are scaled by `progress` so progress=0 → flat row. */
+    const lerp = (a, b, p) => a + (b - a) * p;
+
+    /* Panel becomes square (120×120) at p=0 and narrow (64×120) at p=1. */
+    const PW_3D = 64;
+    const PW = lerp(PH, PW_3D, progress);                /* 120 → 64 */
+
     const SKEW_Y_FULL = -50;
-    const DDX_FULL = Math.round(0.75 * PW);    /* 48 */
-    const DDY_FULL = -Math.round(0.46 * PH);   /* -55 */
+    const DDX_FULL = Math.round(0.75 * PW_3D);           /* 48 */
+    const DDY_FULL = -Math.round(0.46 * PH);             /* -55 */
     const SKEW_Y = SKEW_Y_FULL * progress;
     const DDX = DDX_FULL * progress;
     const DDY = DDY_FULL * progress;
-    const PANEL_GAP = 2 * DDX_FULL + 50;       /* 146 — keep constant */
+    const PANEL_GAP_3D = 2 * DDX_FULL + 50;              /* 146 */
+    const PANEL_GAP_2D = 100;
+    const PANEL_GAP = lerp(PANEL_GAP_2D, PANEL_GAP_3D, progress);
 
+    /* Layer-0 simplex INTERPOLATES between slide-1's irregular triangle
+       (irregular cat/dog/bird, with a 25° W·x rotation at t=1) and the 3D
+       view's equilateral apex-up triangle.  At p=0 the figure should read
+       exactly like slide 1; at p=1 it merges into the 3D layer-0 shape. */
+    const SLIDE1_SX = PH / 200;          /* 0.6 — slide 1 panel was 200 wide */
+    /* Slide-1 raw vertex coords (before W·x rotation) and slide-1 raw label
+       offsets — copied straight from renderFig2 so the proportions match. */
+    const LAYER0_2D = [
+        { ex: 0,    ey: -56, lex: 0,    ley: -82 },   /* cat  */
+        { ex: -45,  ey: +24, lex: -72,  ley: +52 },   /* dog  */
+        { ex: +50,  ey: +38, lex: +74,  ley: +60 },   /* bird */
+    ];
     const R = 18;
+    const LAYER0_3D = [
+        { ex:           0, ey: -R,        lex:                0, ley: -R - 14 },
+        { ex: -R * 0.866, ey: +R * 0.5,   lex: -R * 0.866 - 18, ley: +R * 0.5 + 14 },
+        { ex: +R * 0.866, ey: +R * 0.5,   lex: +R * 0.866 + 18, ley: +R * 0.5 + 14 }
+    ];
     const SIMPLEX_BY_LAYER = [
-        [
-            { ex:           0, ey: -R,        lex:                0, ley: -R - 14 },
-            { ex: -R * 0.866, ey: +R * 0.5,   lex: -R * 0.866 - 18, ley: +R * 0.5 + 14 },
-            { ex: +R * 0.866, ey: +R * 0.5,   lex: +R * 0.866 + 18, ley: +R * 0.5 + 14 }
-        ],
+        LAYER0_2D.map((v2d, i) => {
+            const v3d = LAYER0_3D[i];
+            return {
+                ex:  lerp(v2d.ex  * SLIDE1_SX, v3d.ex,  progress),
+                ey:  lerp(v2d.ey  * SLIDE1_SX, v3d.ey,  progress),
+                lex: lerp(v2d.lex * SLIDE1_SX, v3d.lex, progress),
+                ley: lerp(v2d.ley * SLIDE1_SX, v3d.ley, progress),
+            };
+        }),
         [
             { ex:  R * 0.5,    ey: -R,        lex:  R * 0.5 + 6,    ley: -R - 16 },
             { ex: -R * 0.5,    ey: -R,        lex: -R * 0.5 - 12,   ley: -R - 16 },
@@ -1475,6 +1583,14 @@ function renderFig2Transition(progress) {
         simplex.map((v, i) => Object.assign({}, v, { name: VOCAB_LABELS[q][i] }))
     );
 
+    /* W·x discretization rotation: slide 1's 25° at p=0 → 0° at p=1. */
+    const T1_ROT = lerp(25, 0, progress) * Math.PI / 180;
+    const T1_COS = Math.cos(T1_ROT), T1_SIN = Math.sin(T1_ROT);
+    const rotT1 = (x, y) => ({
+        x: T1_COS * x - T1_SIN * y,
+        y: T1_SIN * x + T1_COS * y,
+    });
+
     /* Layout sized for FULL 3D so panels stay still while depth fades in. */
     const totalW = TIMES.length * PW + (TIMES.length - 1) * PANEL_GAP
                  + (SEQ_LEN - 1) * DDX_FULL;
@@ -1483,8 +1599,11 @@ function renderFig2Transition(progress) {
     const startY = (VH - totalH) / 2 + Math.abs(SKEW_Y_FULL)
                  + (SEQ_LEN - 1) * Math.abs(DDY_FULL);
 
-    /* Particle layout — same RNG seed as renderFig2_3D so it looks like
-       the same flow, just with progress-modulated geometry. */
+    /* Particle Gaussian std also lerps so noise spreads to fill the wider
+       p=0 panel (matches slide 1's 36×32 spread, scaled to 120-wide panel). */
+    const NOISE_X_STD = lerp(36 * SLIDE1_SX, 12, progress);    /* 21.6 → 12 */
+    const NOISE_Y_STD = lerp(32 * SLIDE1_SX, 22, progress);    /* 19.2 → 22 */
+
     let s = 7777;
     const rnd = () => { s = (s * 9301 + 49297) % 233280; return s / 233280; };
     const gauss = () => Math.sqrt(-2 * Math.log(1 - rnd())) * Math.cos(2 * Math.PI * rnd());
@@ -1495,7 +1614,7 @@ function renderFig2Transition(progress) {
         const vocabSorted = vocab.slice().sort((a, b) => a.ey - b.ey);
         const parts = [];
         for (let i = 0; i < N_PER_SEQ; i++) {
-            parts.push({ ex: gauss() * 12, ey: gauss() * 22 });
+            parts.push({ ex: gauss() * NOISE_X_STD, ey: gauss() * NOISE_Y_STD });
         }
         parts.sort((a, b) => a.ey - b.ey);
         parts.forEach((p, i) => {
@@ -1504,15 +1623,27 @@ function renderFig2Transition(progress) {
             p.cluster = cluster;
             const tjx = (rnd() - 0.5) * 9;
             const tjy = (rnd() - 0.5) * 7;
-            p.posByT = TIMES.map(t => ({
-                ex: (1 - t) * p.ex + t * (target.ex + tjx),
-                ey: (1 - t) * p.ey + t * (target.ey + tjy)
-            }));
+            const tx_target = target.ex + tjx;
+            const ty_target = target.ey + tjy;
+            /* On the front layer, t=1 particles converge to the ROTATED
+               vertex (so they actually land on the simplex corners drawn). */
+            const lastIdx = TIMES.length - 1;
+            p.posByT = TIMES.map((t, j) => {
+                let tx = tx_target, ty = ty_target;
+                if (q === 0 && j === lastIdx) {
+                    const r = rotT1(tx, ty);
+                    tx = r.x; ty = r.y;
+                }
+                return { ex: (1 - t) * p.ex + t * tx, ey: (1 - t) * p.ey + t * ty };
+            });
         });
         partsBySeq.push(parts);
     }
 
     function projPanel(panelX, panelY, ex, ey) {
+        /* ex/ey are in PANEL coords (no extra horizontal scaling — the
+           simplex/particle coords already lerp between PW_2D and PW_3D
+           sized shapes). */
         const ix = PW / 2 + ex;
         const iy = PH / 2 + ey;
         return {
@@ -1527,8 +1658,18 @@ function renderFig2Transition(progress) {
              + `L ${px} ${py} Z`;
     }
 
-    /* Render layers BACK to FRONT. Back-layer opacity = full * progress, so
-       at progress=0 only the front layer is visible (looks like 2D). */
+    /* Density σ also lerps so the blob fills the panel at p=0 (matches
+       slide 1's σ = 8 + 47·(1-t)³ in 200-wide panel) and tightens at p=1
+       (3D σ = 3 + 15·(1-t)³ in 64-wide panel). Computed per-frame because
+       cluster centres themselves move with progress. */
+    function sigmaAt(t) {
+        const s2D = (8 + 47 * Math.pow(1 - t, 3)) * SLIDE1_SX;
+        const s3D = 3 + 15 * Math.pow(1 - t, 3);
+        return lerp(s2D, s3D, progress);
+    }
+
+    /* Render layers BACK to FRONT. Back-layer opacity scales with progress
+       so at p=0 only the front layer is visible (single-row 2D look). */
     for (let q = SEQ_LEN - 1; q >= 0; q--) {
         const offX = q * DDX;
         const offY = q * DDY;
@@ -1538,7 +1679,7 @@ function renderFig2Transition(progress) {
         const parts = partsBySeq[q];
         const isFront = (q === 0);
 
-        if (opacity < 0.02) continue;     /* fully transparent — skip */
+        if (opacity < 0.02) continue;
 
         const layerG = el('g', {
             transform: `translate(${offX}, ${offY})`,
@@ -1549,15 +1690,39 @@ function renderFig2Transition(progress) {
             const px = startX + j * (PW + PANEL_GAP);
             const py = startY;
 
+            /* White panel background (border drawn LATER so it sits on top
+               of the density — this is the "panel border in front" fix). */
             el('path', {
                 d: panelPath(px, py),
                 fill: '#ffffff',
-                stroke: isFront ? '#888' : '#c4cad3',
-                'stroke-width': isFront ? 1 : 0.7
+                stroke: 'none',
             }, layerG);
 
+            /* Density: per-frame because cluster centres + σ both depend on
+               progress. Skewed via matrix transform so it tilts with the
+               cabinet projection. */
+            if (t < 1.00) {
+                const sigma = sigmaAt(t);
+                const centersLocal = vocab.map(v => [
+                    PW / 2 + v.ex * t,
+                    PH / 2 + v.ey * t,
+                ]);
+                const { grid, maxD } =
+                    gaussMixGrid(centersLocal, sigma, PW, PH, 32);
+                const skewG = el('g', {
+                    transform: `matrix(1 ${SKEW_Y / PW} 0 1 ${px} ${py})`
+                }, layerG);
+                renderDensityFill(skewG, 0, 0, PW, PH, grid, maxD);
+                renderDensityContours(skewG, 0, 0, PW, PH, grid, maxD);
+            }
+
             if (t === 1.00) {
-                const corners = vocab.map(v => projPanel(px, py, v.ex, v.ey));
+                /* Apply T1 rotation to t=1 simplex on front layer only. */
+                const rot = isFront ? rotT1 : (x, y) => ({ x: x, y: y });
+                const corners = vocab.map(v => {
+                    const r = rot(v.ex, v.ey);
+                    return projPanel(px, py, r.x, r.y);
+                });
                 el('polygon', {
                     points: corners.map(c => `${c.x},${c.y}`).join(' '),
                     fill: '#fdeed8', stroke: '#e07a30',
@@ -1565,12 +1730,14 @@ function renderFig2Transition(progress) {
                     opacity: isFront ? 0.55 : 0.4
                 }, layerG);
                 vocab.forEach(v => {
-                    const c = projPanel(px, py, v.ex, v.ey);
+                    const r  = rot(v.ex,  v.ey);
+                    const lr = rot(v.lex, v.ley);
+                    const c = projPanel(px, py, r.x, r.y);
                     el('circle', {
                         cx: c.x, cy: c.y, r: 4,
                         fill: '#e07a30', stroke: '#fff', 'stroke-width': 1.2
                     }, layerG);
-                    const lab = projPanel(px, py, v.lex, v.ley);
+                    const lab = projPanel(px, py, lr.x, lr.y);
                     tx(layerG, lab.x, lab.y, v.name,
                         { size: 12, fill: '#444', style: 'italic',
                           weight: isFront ? 600 : 400 });
@@ -1585,9 +1752,17 @@ function renderFig2Transition(progress) {
                     }, layerG);
                 });
             }
+
+            /* Panel border ON TOP of the density (z-order fix). */
+            el('path', {
+                d: panelPath(px, py),
+                fill: 'none',
+                stroke: isFront ? '#888' : '#c4cad3',
+                'stroke-width': isFront ? 1 : 0.7
+            }, layerG);
         });
 
-        /* Trajectory lines */
+        /* Trajectory lines — last segment uses rotated target on front layer. */
         const trajOpacity = isFront ? 0.45 : (q === 1 ? 0.32 : 0.22);
         for (let j = 0; j < TIMES.length - 2; j++) {
             const px1 = startX + j * (PW + PANEL_GAP);
@@ -1599,6 +1774,168 @@ function renderFig2Transition(progress) {
                     x1: a.x, y1: a.y, x2: b.x, y2: b.y,
                     stroke: '#6a5acd', 'stroke-width': 0.55, opacity: trajOpacity
                 }, layerG);
+            });
+        }
+
+        /* Dashed cluster → (rotated) vertex arrows: front layer only. */
+        if (isFront) {
+            arrowHead(svg, 'fig2-trans-arrow', '#888', { size: 5 });
+            const j = TIMES.length - 2;
+            const px1 = startX + j * (PW + PANEL_GAP);
+            const px2 = startX + (j + 1) * (PW + PANEL_GAP);
+            vocab.forEach(v => {
+                /* arrow head sits on the rotated t=1 vertex (matches slide 1) */
+                const a = projPanel(px1, startY, v.ex, v.ey);
+                const r = rotT1(v.ex, v.ey);
+                const bFull = projPanel(px2, startY, r.x, r.y);
+                const ddx = bFull.x - a.x, ddy = bFull.y - a.y;
+                const dlen = Math.sqrt(ddx * ddx + ddy * ddy) || 1;
+                const ex_ = bFull.x - ddx * 8 / dlen;
+                const ey_ = bFull.y - ddy * 8 / dlen;
+                const mx = (a.x + ex_) / 2;
+                const my = (a.y + ey_) / 2 - 18;
+                el('path', {
+                    d: `M ${a.x} ${a.y} Q ${mx} ${my} ${ex_} ${ey_}`,
+                    fill: 'none', stroke: '#888',
+                    'stroke-width': 0.9, 'stroke-dasharray': '4,3',
+                    'marker-end': 'url(#fig2-trans-arrow)'
+                }, layerG);
+            });
+        }
+    }
+
+    /* ===== Animated traveler dots =====
+       2D state (p=0): 3 dots, one per cluster of the front layer
+                       (cat / dog / bird), each flowing noise → cluster.
+       3D state (p=1): 9 dots — 3 per layer, one per cluster — same
+                       per-cluster trajectory but with depth offsets and
+                       back-layer fade-in. All dots share a single
+                       `dotPhase ∈ [0,1]` cycle so they fly in unison. */
+    {
+        /* DOT_DUR doubled to 8400 ms (driver). Flight DURATION stays the
+           same as before (≈ 4200 ms): we keep the active phase in 0..0.5
+           of the cycle and pause through 0.5..1.0. So each dot flies at
+           the original speed, and successive cluster GROUPS are 1/3 ×
+           DOT_DUR = 2800 ms apart instead of 1400 ms. */
+        const FADE_IN_END   = 0.03;
+        const FLOW_END      = 0.39;
+        const HOLD_END      = 0.43;
+        const FADE_OUT_END  = 0.50;
+        function dotState(phase) {
+            phase = phase - Math.floor(phase);   /* mod 1 */
+            if (phase < FADE_IN_END)
+                return { shown: true, op: phase / FADE_IN_END, u: 0 };
+            if (phase < FLOW_END)
+                return { shown: true, op: 1,
+                         u: (phase - FADE_IN_END) / (FLOW_END - FADE_IN_END) };
+            if (phase < HOLD_END)
+                return { shown: true, op: 1, u: 1 };
+            if (phase < FADE_OUT_END) {
+                const v = (phase - HOLD_END) / (FADE_OUT_END - HOLD_END);
+                return { shown: true, op: Math.max(0, 1 - v), u: 1 };
+            }
+            return { shown: false, op: 0, u: 1 };
+        }
+        const segCount = TIMES.length - 1;            /* 4 */
+
+        for (let q = 0; q < SEQ_LEN; q++) {
+            const layerVis = q === 0 ? 1 : progress;
+            if (layerVis < 0.05) continue;
+            const vocab = VOCAB_BY_LAYER[q];
+            /* Deterministic noise per (q, c). Same RNG sequence regardless
+               of which (q, c) drew it last. */
+            let s2 = 1234 + q * 919 + 0xa5a5;
+            const r2 = () => { s2 = (s2 * 9301 + 49297) % 233280; return s2 / 233280; };
+            const g2 = () => Math.sqrt(-2 * Math.log(1 - r2())) * Math.cos(2 * Math.PI * r2());
+            for (let c = 0; c < 3; c++) {
+                const noiseEx = g2() * NOISE_X_STD;
+                const noiseEy = g2() * NOISE_Y_STD;
+                /* Cluster-level phase stagger: cluster c is 1/3 cycle apart. */
+                const cPhase = dotPhase + c / 3;
+                const st = dotState(cPhase);
+                if (!st.shown) continue;
+                const segIdx   = Math.min(segCount - 1, Math.floor(st.u * segCount));
+                const segLocal = st.u * segCount - segIdx;
+                const target = vocab[c];
+                const lastIdx = TIMES.length - 1;
+                function pathPt(j) {
+                    const t = TIMES[j];
+                    let tx = target.ex, ty = target.ey;
+                    if (q === 0 && j === lastIdx) {
+                        const r = rotT1(tx, ty);
+                        tx = r.x; ty = r.y;
+                    }
+                    const ex = (1 - t) * noiseEx + t * tx;
+                    const ey = (1 - t) * noiseEy + t * ty;
+                    const pxj = startX + j * (PW + PANEL_GAP);
+                    const cc = projPanel(pxj, startY, ex, ey);
+                    return { x: cc.x + q * DDX, y: cc.y + q * DDY };
+                }
+                const a = pathPt(segIdx);
+                const b = pathPt(segIdx + 1);
+                const cx = a.x + (b.x - a.x) * segLocal;
+                const cy = a.y + (b.y - a.y) * segLocal;
+                el('circle', {
+                    cx: cx.toFixed(2),
+                    cy: cy.toFixed(2),
+                    r: q === 0 ? 5 : 4.4,
+                    fill: '#6a5acd',
+                    stroke: '#fff',
+                    'stroke-width': 1.2,
+                    opacity: (st.op * layerVis * (q === 0 ? 0.95 : 0.78)).toFixed(3),
+                }, svg);
+            }
+        }
+    }
+
+    /* Slide-2 style cross-layer attention arcs. They only make sense when
+       the depth axis is visible, so opacity fades in as progress crosses
+       0.5 → 1. Drawn on the base SVG (not inside a layer transform) so the
+       arcs anchor to absolute panel-centre screen coords. */
+    {
+        const attnOp = Math.max(0, (progress - 0.5) / 0.5);
+        if (attnOp > 0.01) {
+            const defs = svg.querySelector('defs') || el('defs', null, svg);
+            if (!svg.querySelector('defs')) svg.insertBefore(defs, svg.firstChild);
+            if (!defs.querySelector('#fig2-trans-attn-tip')) {
+                const m = el('marker', {
+                    id: 'fig2-trans-attn-tip',
+                    viewBox: '0 0 10 10',
+                    refX: 8.5, refY: 5,
+                    markerWidth: 4.5, markerHeight: 4.5,
+                    orient: 'auto-start-reverse',
+                }, defs);
+                el('path', { d: 'M0,2 L9,5 L0,8 z', fill: '#D4A054' }, m);
+            }
+            TIMES.forEach((t, j) => {
+                const px = startX + j * (PW + PANEL_GAP);
+                const py = startY;
+                const anchors = [];
+                for (let q = 0; q < SEQ_LEN; q++) {
+                    const a = projPanel(px, py, 0, 0);
+                    anchors.push({ x: a.x + q * DDX, y: a.y + q * DDY });
+                }
+                for (let i = 0; i < SEQ_LEN; i++) {
+                    for (let k = i + 1; k < SEQ_LEN; k++) {
+                        const a = anchors[i], b = anchors[k];
+                        const ddy = Math.abs(b.y - a.y);
+                        const bow = (PW / 2 + 36) + 0.40 * ddy;
+                        const mx = (a.x + b.x) / 2 + bow;
+                        const my = (a.y + b.y) / 2;
+                        el('path', {
+                            d: `M ${a.x.toFixed(1)} ${a.y.toFixed(1)} `
+                             + `Q ${mx.toFixed(1)} ${my.toFixed(1)} `
+                             + `${b.x.toFixed(1)} ${b.y.toFixed(1)}`,
+                            fill: 'none',
+                            stroke: '#D4A054',
+                            'stroke-width': 1.0,
+                            'stroke-dasharray': '4,3',
+                            opacity: 0.75 * attnOp,
+                            'marker-start': 'url(#fig2-trans-attn-tip)',
+                            'marker-end':   'url(#fig2-trans-attn-tip)',
+                        }, svg);
+                    }
+                }
             });
         }
     }
@@ -1614,11 +1951,18 @@ function startFig2TransitionLoop() {
     const easeInOut = u => u < 0.5
         ? 2 * u * u
         : 1 - Math.pow(-2 * u + 2, 2) / 2;
-    const FORWARD = 3000;        /* ms 0→1 */
-    const HOLD_TOP = 1800;       /* ms hold at 1 */
-    const REVERSE = 2400;        /* ms 1→0 */
+    const FORWARD = 3000;        /* ms 0→1 — transition speed unchanged */
+    const HOLD_TOP = 6800;       /* ms hold at 1 — was 1800, +5 s extra so
+                                    the audience has time to look at the
+                                    final 3D state before it morphs back. */
+    const REVERSE = 2400;        /* ms 1→0 — transition speed unchanged */
     const HOLD_BOT = 800;        /* ms hold at 0 */
     const TOTAL = FORWARD + HOLD_TOP + REVERSE + HOLD_BOT;
+    /* Dot animation: separate phase clock, independent of geometry cycle.
+       2× the previous 4200 ms so successive cluster groups have a longer
+       pause between them. Cluster stagger is 1/3 of DOT_DUR, i.e. ~2.8 s
+       between consecutive groups starting. */
+    const DOT_DUR = 8400;            /* ms per full noise → cluster cycle */
     function tick(now) {
         if (now - lastDraw > 33) {        /* throttle ~30 fps */
             lastDraw = now;
@@ -1629,12 +1973,13 @@ function startFig2TransitionLoop() {
             else if (t < FORWARD + HOLD_TOP + REVERSE)
                                                   p = easeInOut(1 - (t - FORWARD - HOLD_TOP) / REVERSE);
             else                                   p = 0;
-            renderFig2Transition(p);
+            const dotPhase = ((now - _transStart) % DOT_DUR) / DOT_DUR;
+            renderFig2Transition(p, dotPhase);
         }
         _transAnim = requestAnimationFrame(tick);
     }
     /* Render once immediately at progress 0, then start the loop. */
-    renderFig2Transition(0);
+    renderFig2Transition(0, 0);
     _transAnim = requestAnimationFrame(tick);
 }
 function stopFig2TransitionLoop() {
