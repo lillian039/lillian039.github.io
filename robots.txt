@@ -1,4 +1,4 @@
 User-agent: *
-Disallow:
+Disallow: /assets/html/elf-slides/
 
 Sitemap: https://lillian039.github.io//sitemap.xml
