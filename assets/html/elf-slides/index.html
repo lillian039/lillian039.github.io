@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta
+			name="viewport"
+			content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+		/>
+
+		<title>ELF: Embedded Language Flows</title>
+
+		<link rel="stylesheet" href="dist/reset.css" />
+		<link rel="stylesheet" href="dist/reveal.css" />
+		<link rel="stylesheet" href="dist/theme/white.css" />
+		<link rel="stylesheet" href="dist/plugin/highlight/monokai.css" />
+
+		<style>
+			:root {
+				--elf-primary: #1f4e79;
+				--elf-accent: #c0504d;
+				--elf-soft: #f2f2f2;
+			}
+			.reveal h1, .reveal h2, .reveal h3 {
+				color: var(--elf-primary);
+				text-transform: none;
+				letter-spacing: -0.5px;
+			}
+			.reveal h1 { font-size: 2.0em; }
+			.reveal h2 { font-size: 1.4em; }
+			.reveal h3 { font-size: 1.05em; }
+			.reveal section p,
+			.reveal section li { font-size: 0.7em; line-height: 1.4; }
+			.reveal .authors { font-size: 0.55em; color: #333; margin-top: 1em; }
+			.reveal .affil { font-size: 0.5em; color: #555; margin-top: 0.4em; }
+			.reveal .highlight { color: var(--elf-accent); font-weight: bold; }
+			.reveal .box {
+				background: var(--elf-soft);
+				border-left: 4px solid var(--elf-primary);
+				padding: 0.5em 1em;
+				margin: 0.5em auto;
+				text-align: left;
+				font-size: 0.7em;
+				max-width: 82%;
+				border-radius: 4px;
+			}
+			.reveal .small { font-size: 0.5em; color: #555; }
+			.reveal section img {
+				background: none;
+				border: none;
+				box-shadow: none;
+				max-height: 460px;
+			}
+			.reveal .equation {
+				background: var(--elf-soft);
+				padding: 0.5em 0.9em;
+				border-radius: 6px;
+				font-family: "Times New Roman", serif;
+				font-style: italic;
+				font-size: 0.9em;
+				display: inline-block;
+				margin: 0.4em 0;
+			}
+			.reveal .two-col {
+				display: flex;
+				gap: 1.4em;
+				align-items: center;
+				text-align: left;
+			}
+			.reveal .two-col .col { flex: 1; }
+			.reveal .two-col p, .reveal .two-col li { font-size: 0.62em; }
+		</style>
+	</head>
+	<body>
+		<div class="reveal">
+			<div class="slides">
+
+				<!-- 1. Title -->
+				<section>
+					<h1>ELF: Embedded Language Flows</h1>
+					<h3>A Continuous Diffusion Language Model<br/>via Flow Matching</h3>
+					<p class="authors">
+						<b>Keya Hu*, Linlu Qiu*, Yiyang Lu, Hanhong Zhao,<br/>
+						Tianhong Li, Yoon Kim, Jacob Andreas, Kaiming He</b>
+					</p>
+					<p class="affil">MIT</p>
+					<p class="small" style="margin-top:1em;">github.com/lillian039/ELF</p>
+				</section>
+
+				<!-- 2. Motivation -->
+				<section>
+					<h2>Diffusion Language Models</h2>
+					<p>Diffusion / flow models dominate <b>continuous</b> data (images, video).<br/>Today's leading DLMs are <b>discrete</b> — operating on tokens.</p>
+					<div class="box" style="text-align:center;">
+						Is the gap of <b>continuous</b> DLMs intrinsic to language —<br/>or just under-explored design?
+					</div>
+				</section>
+
+				<!-- 3. ELF idea + teaser.gif -->
+				<section>
+					<h2>ELF: Stay Continuous Until the End</h2>
+					<img src="assets/teaser.gif" alt="ELF teaser" />
+					<p class="small">Denoise in continuous embedding space &nbsp;·&nbsp; discretize only at t = 1 &nbsp;·&nbsp; one shared-weight network.</p>
+				</section>
+
+				<!-- 4. Method I — Flow Matching in embedding space -->
+				<section>
+					<h2>Flow Matching in Embedding Space</h2>
+					<img src="assets/training_inference_pipeline-1.jpg" alt="Training & inference pipeline" style="max-height:340px;" />
+
+				</section>
+				<section>
+					<h2>Flow Matching in Embedding Space</h2>
+					<p><b>1. Encode</b> discrete tokens <i>s</i> into continuous embeddings <i>x</i> using a frozen pretrained <b>T5 encoder</b>.</p>
+					<p><b>2. Interpolate</b> between data and Gaussian noise (rectified flow):</p>
+					<p class="equation">z<sub>t</sub> = t·x + (1−t)·ε, &nbsp; ε ~ 𝒩(0, I), &nbsp; t ∈ [0,1]</p>
+					<p><b>3. Train</b> a network <i>x</i><sub>θ</sub>(z<sub>t</sub>, t) to predict the <b>clean embedding</b> <i>x</i> (<span class="highlight">x-prediction</span>):</p>
+					<p class="equation">ℒ<sub>MSE</sub> = 𝔼<sub>t, x, ε</sub> &nbsp; ‖ x<sub>θ</sub>(z<sub>t</sub>, t) − x ‖²</p>
+					<!-- <div class="box">
+						<b>Why x-prediction?</b> &nbsp;Works in <b>high-dim</b> embedding space (768-d), and aligns with predicting <b>clean tokens</b> at t = 1 — enabling weight sharing with the decoder.
+					</div> -->
+				</section>
+
+				<!-- 5. Method II — shared denoiser/decoder + pipeline image -->
+				<section>
+					<h2>Shared Denoiser–Decoder</h2>
+					<div class="two-col" style="margin-top:0.5em;">
+						<div class="col">
+							<p><b>Training:</b> one network handles two modes via a binary <b>mode token</b>.</p>
+							<ul>
+								<li><b>Denoise mode</b> (t&lt;1): MSE loss on embedding</li>
+								<li><b>Decode mode</b> (t=1): CE loss via unembedding W</li>
+							</ul>
+							<p class="equation" style="font-size:0.75em;">ℒ<sub>CE</sub> = CrossEnt(W·x<sub>θ</sub>(z̃), s)</p>
+							<p>Mix in a single batch: <b>80% MSE + 20% CE</b>.</p>
+						</div>
+						<div class="col">
+							<p><b>Inference:</b> ODE / SDE sampler in embedding space.</p>
+							<ul>
+								<li>Start from z<sub>0</sub> ~ 𝒩(0, I)</li>
+								<li>Iteratively denoise z<sub>t</sub> → z<sub>t+Δt</sub></li>
+								<li>At <b>t = 1</b>: switch to <b>decode mode</b>, project to logits, argmax → tokens</li>
+							</ul>
+							<p><b>No separate decoder at inference.</b></p>
+						</div>
+					</div>
+				</section>
+
+				<!-- 6. System-level comparison -->
+				<section>
+					<h2>System-Level Comparison</h2>
+					<img src="assets/sys_compare.jpg" alt="System-level comparison" style="max-height:500px;" />
+					<p class="small">Lower Gen. PPL with fewer steps &nbsp;·&nbsp; beats <i>distilled</i> baselines without distillation &nbsp;·&nbsp; <b>10× fewer training tokens</b>.</p>
+				</section>
+
+				<!-- 7. Qualitative generation -->
+				<section>
+					<h2>Generation in Action</h2>
+					<img src="assets/generation.gif" alt="ELF generation" />
+					<p class="small">ELF-B (105M) generating text by iterative denoising in embedding space.</p>
+				</section>
+
+				<!-- 8. Thanks -->
+				<section>
+					<h1>Thank you!</h1>
+					<div class="box" style="text-align:center; margin-top:1.5em;">
+						<b>Continuous DLMs are a promising path<br/>for diffusion-based language modeling.</b>
+					</div>
+					<p class="small" style="margin-top:1.5em;">github.com/lillian039/ELF</p>
+				</section>
+
+			</div>
+		</div>
+
+		<script src="dist/reveal.js"></script>
+		<script src="dist/plugin/notes.js"></script>
+		<script src="dist/plugin/markdown.js"></script>
+		<script src="dist/plugin/highlight.js"></script>
+		<script>
+			Reveal.initialize({
+				hash: true,
+				slideNumber: 'c/t',
+				transition: 'slide',
+				plugins: [RevealMarkdown, RevealHighlight, RevealNotes],
+			});
+		</script>
+	</body>
+</html>
