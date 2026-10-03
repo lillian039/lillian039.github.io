@@ -370,6 +370,7 @@ filtered_bibtex_keywords:
     selected,
     slides,
     supp,
+    twitter,
     video,
     website,
   ]
